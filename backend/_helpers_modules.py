@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-import traceback, json, re, pycountry, redis, pika
+import traceback, json, re, pycountry, redis, pika, sentry_sdk
 
 from . import models
 
@@ -28,6 +28,7 @@ def logger_error(msg):
         print(msg)
         print(traceback.format_exc())
         print('............................\n')
+        sentry_sdk.capture_message(msg, level="error")
         return True
     except Exception as e:
         print(e)

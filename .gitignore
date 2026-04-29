@@ -56,3 +56,7 @@ __pycache__/
 *.pyo
 *.pyd
 *.sqlite3
+
+# Prometheus
+data
+**/data

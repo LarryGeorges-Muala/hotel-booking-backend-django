@@ -1,0 +1,112 @@
+# docker compose up --build --no-deps --force-recreate --remove-orphans
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090" # Access UI at http://localhost:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml # Mount config file
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - "9100:9100" # Exposes hardware/OS metrics
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000" # Access UI at http://localhost:3000
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin # Default login: admin / admin
+    restart: unless-stopped
+
+  mysql:
+    image: mysql
+    container_name: mysql
+    restart: always
+    networks:
+      - local_network
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq-container
+    networks:
+      - local_network
+    ports:
+      - 5672:5672  # AMQP port
+      - 15672:15672 # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    command: redis-server --bind 0.0.0.0
+    networks:
+      - local_network
+    ports:
+      # - 127.0.0.1:6379:6379
+      - 0.0.0.0:6379:6379
+
+  backend-django:
+    container_name: backend-django
+    image: django-backend:latest
+    networks:
+      - local_network
+    build:
+      context: .
+      dockerfile: ./backend.Dockerfile
+    volumes:
+      - .:/app
+    environment:
+      ENV: ${ENVIRONMENT}
+      SECRET_KEY: ${SECRET_KEY}
+      REDIS_HOST: ${REDIS_HOST}
+      SENTRY_DNS_DJANGO: ${SENTRY_DNS_DJANGO}
+    ports:
+      - 8000:8000
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      redis:
+        condition: service_started
+
+  frontend:
+    container_name: frontend
+    image: reactjs-frontend:latest
+    networks:
+      - local_network
+    build:
+      # https://gitlab.com/LarryGeorges-Muala/hotel-booking-frontend-reactjs
+      context: ../../hotel-booking-frontend-reactjs/
+      dockerfile: ./frontend.Dockerfile
+    volumes:
+      - ../../hotel-booking-frontend-reactjs/:/app
+      - /app/node_modules  # Prevents local node_modules from overwriting container's
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # Required for some OS/Docker setups to detect changes
+      - VITE_ENV=${ENVIRONMENT}
+      - VITE_BACKEND=${REACT_BACKEND_URL}
+      - VITE_SENTRY_DNS=${SENTRY_DNS_REACT}
+    ports:
+      - 5173:5173
+    depends_on:
+      backend-django:
+        condition: service_started
+
+networks:
+  local_network:
+    driver: bridge

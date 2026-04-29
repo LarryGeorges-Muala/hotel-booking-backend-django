@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
+import sentry_sdk
 from pathlib import Path
 from corsheaders.defaults import default_headers
-import os
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -34,6 +35,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
+    'host.docker.internal',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -42,22 +44,29 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
 ]
+CSRF_COOKIE_SECURE = True
 
-# CSRF_COOKIE_SECURE = False
-
-CSRF_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_HTTPONLY = True
-
-# PROD SETTINGS
-# CSRF_COOKIE_SECURE = True
-# SESSION_COOKIE_SECURE = True
-
-
+# CORS
+# For specific domains (Recommended for Production)
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+]
+# To allow all origins (Use only for development)
+# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-csrftoken",
+]
+CORS_EXPOSE_HEADERS = [
+    'Content-Type', 'X-CSRFToken'
+]
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
-
 INSTALLED_APPS = [
+    'django_prometheus',
     'backend.apps.BackendConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -70,6 +79,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Must be at the top
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -77,6 +87,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'booking.urls'
@@ -152,26 +163,10 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# CORS
-# For specific domains (Recommended for Production)
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-]
-
-# To allow all origins (Use only for development)
-# CORS_ALLOW_ALL_ORIGINS = True
-
-CORS_ALLOW_HEADERS = list(default_headers) + [
-    "x-csrftoken",
-    "HTTP_X_CSRFTOKEN",
-]
-
-CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
-
-CORS_ALLOW_CREDENTIALS = True
-
-# CSRF_COOKIE_HTTPONLY = False
+# Sentry
+sentry_sdk.init(
+    dsn=os.getenv('SENTRY_DNS_DJANGO'),
+    # Add data like request headers and IP for users,
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    send_default_pii=True,
+)
