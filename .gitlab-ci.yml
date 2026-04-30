@@ -1,0 +1,16 @@
+stages:
+  - test
+
+default:
+  image: python:3.12
+
+django_sanity:
+  stage: test
+  script:
+    - echo 'Starting tests...'
+    - python -m venv ./.venv
+    - source ./.venv/bin/activate
+    - pip install --no-cache-dir -r requirements.txt
+    - python manage.py check
+    - deactivate
+    - rm -rf ./.venv

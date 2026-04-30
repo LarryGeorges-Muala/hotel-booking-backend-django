@@ -25,6 +25,9 @@ COPY . /app/
  
 # Expose the Django port
 EXPOSE 8000
- 
+
+# Sanity check
+RUN python manage.py check
+
 # Run Django’s development server
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
