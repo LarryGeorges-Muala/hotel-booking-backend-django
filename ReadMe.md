@@ -14,6 +14,8 @@ SECRET_KEY='some-string'
 SENTRY_DNS_DJANGO='https://...ingest.us.sentry.io/...'
 ```
 
+> Note: see https://sentry.io/pricing/ for a Sentry free-trial account to gain access to the monitor dashboard
+
 - setup application
 ```bash
 python3.12 -m venv ./.venv
