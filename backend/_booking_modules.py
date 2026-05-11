@@ -1,22 +1,6 @@
-from datetime import date, datetime
-
 import traceback, json, re, pycountry, redis, pika, sentry_sdk
-
+from datetime import date, datetime
 from . import models
-
-
-'''
-Sample Blocked Calendar Entries
-'''
-blocked_calendar_entries_list = [
-    date(2026, 4, 25),
-    date(2026, 4, 26),
-    date(2026, 4, 27),
-    date(2026, 5, 1),
-    date(2026, 5, 2),
-    date(2026, 1, 1),
-]
-blocked_calendar_entries_list.sort()
 
 
 '''
@@ -28,7 +12,7 @@ def logger_error(msg):
         print(msg)
         print(traceback.format_exc())
         print('............................\n')
-        sentry_sdk.capture_message(msg, level="error")
+        # sentry_sdk.capture_message(msg, level="error")
         return True
     except Exception as e:
         print(e)
