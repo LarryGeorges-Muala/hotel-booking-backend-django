@@ -60,3 +60,9 @@ __pycache__/
 # Prometheus
 data
 **/data
+
+# Jenkins
+.jenkins_configuration
+.jenkins_configuration/*
+**/.jenkins_configuration
+**/.jenkins_configuration/*
