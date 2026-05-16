@@ -131,6 +131,16 @@ services:
       backend-django:
         condition: service_started
 
+  nuclei:
+    image: projectdiscovery/nuclei:latest
+    container_name: nuclei-dast
+    command: -l /app/dast.urls.txt -jsonl /app/results.jsonl -validate
+    volumes:
+      - .:/app
+    depends_on:
+      backend-django:
+        condition: service_started
+
 networks:
   local_network:
     driver: bridge
