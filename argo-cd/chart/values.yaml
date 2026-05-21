@@ -29,7 +29,7 @@ super-chart:
             arn: ""
             securityGroup: ""
           image:
-            repository: public.ecr.aws/l6m2t8p7/docker-2048
+            repository: public-repo-hotel-booking-django
             pullPolicy: IfNotPresent
             tag: "latest"
           podAnnotations: {}
