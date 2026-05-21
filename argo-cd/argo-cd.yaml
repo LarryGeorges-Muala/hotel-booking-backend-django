@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: 'booking-backend'
+spec:
+  destination:
+    name: 'in-cluster'
+    namespace: 'dev'
+  source:
+    path: 'argo-cd/chart'
+    repoURL: 'https://github.com/LarryGeorges-Muala/hotel-booking-backend-django'
+    targetRevision: HEAD
+    # helm:
+    #   valueFiles:
+    #   - values.yaml
+  project: 'default'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
