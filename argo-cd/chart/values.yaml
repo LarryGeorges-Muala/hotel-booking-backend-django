@@ -88,7 +88,7 @@ super-chart:
           volumeMounts: []
 
       serviceAccount:
-        create: false
+        create: true
         automount: false
         annotations: {}
         name: ""
