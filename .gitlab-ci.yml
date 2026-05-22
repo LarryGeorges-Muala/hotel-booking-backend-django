@@ -1,5 +1,7 @@
 stages:
   - test
+  - vulnerabilities_trivy
+  - vulnerabilities_sbom_syft_grype
 
 default:
   image: python:3.12
