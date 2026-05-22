@@ -1,7 +1,19 @@
 # docker compose up --build --no-deps --force-recreate --remove-orphans
 services:
+  vulnerabilities:
+    container_name: vulnerabilities-django
+    build:
+      context: .
+      dockerfile: ./vulnerabilities.Dockerfile
+    networks:
+      - local_network
+    volumes:
+      - .:/app
+      - /app/.jenkins_configuration
+      - .vulnerabilities:/.vulnerabilities
+    restart: unless-stopped
+
   jenkins:
-    image: jenkins/jenkins:lts-local
     container_name: jenkins
     build:
       context: .
@@ -87,7 +99,6 @@ services:
 
   backend-django:
     container_name: backend-django
-    image: django-backend:latest
     networks:
       - local_network
     build:
@@ -110,7 +121,6 @@ services:
 
   frontend:
     container_name: frontend
-    image: reactjs-frontend:latest
     networks:
       - local_network
     build:

@@ -66,3 +66,7 @@ data
 .jenkins_configuration/*
 **/.jenkins_configuration
 **/.jenkins_configuration/*
+
+# Local Vulnerabilities Report
+.vulnerabilities
+**/.vulnerabilities
