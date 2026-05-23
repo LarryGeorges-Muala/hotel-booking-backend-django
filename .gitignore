@@ -70,3 +70,7 @@ data
 # Local Vulnerabilities Report
 .vulnerabilities
 **/.vulnerabilities
+.nuclei
+.nuclei/*
+**/.nuclei
+**/.nuclei/*

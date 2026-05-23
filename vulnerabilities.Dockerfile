@@ -33,10 +33,11 @@ RUN python3 -m pip install semgrep-rules-manager
 RUN semgrep-rules-manager --dir $HOME/custom-semgrep-rules download
 RUN ls $HOME/custom-semgrep-rules
 
+
 ## MANUAL SCANNING: docker exec -it vulnerabilities-django /bin/sh
 
 ## TRIVY
-# RUN trivy fs /app >> /.vulnerabilities/trivy.log
+# RUN trivy fs /app --include-dev-deps --dependency-tree >> /.vulnerabilities/trivy.log
 
 
 ## SBOM - Syft/Grype

@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
 
   jenkins:
-    container_name: jenkins
+    container_name: jenkins-django
     build:
       context: .
       dockerfile: ./jenkins.Dockerfile
@@ -38,7 +38,7 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: prometheus
+    container_name: prometheus-django
     ports:
       - "9090:9090" # Access UI at http://localhost:9090
     volumes:
@@ -47,14 +47,14 @@ services:
 
   node-exporter:
     image: prom/node-exporter:latest
-    container_name: node-exporter
+    container_name: node-exporter-django
     ports:
       - "9100:9100" # Exposes hardware/OS metrics
     restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
+    container_name: grafana-django
     ports:
       - "3000:3000" # Access UI at http://localhost:3000
     environment:
@@ -120,7 +120,7 @@ services:
         condition: service_started
 
   frontend:
-    container_name: frontend
+    container_name: frontend-django
     networks:
       - local_network
     build:
@@ -143,10 +143,54 @@ services:
 
   nuclei:
     image: projectdiscovery/nuclei:latest
-    container_name: nuclei-dast
-    command: -l /app/dast.urls.txt -jsonl /app/results.jsonl -validate
+    container_name: nuclei-dast-django
+    entrypoint: 
+      - /bin/sh
+      - -c
+      - |
+        rm -rf /.vulnerabilities/* \
+        && nuclei -verbose \
+          -list /app/dast.urls.txt \
+          -output /.vulnerabilities/nuclei.batteringram.log \
+          -trace-log /.vulnerabilities/nuclei.batteringram.trace.log \
+          -error-log /.vulnerabilities/nuclei.batteringram.error.log \
+          -store-resp-dir /.vulnerabilities/nuclei.batteringram.report \
+          -stats \
+          -timestamp \
+          -matcher-status \
+          -debug \
+          -debug-req \
+          -debug-resp \
+          -attack-type batteringram \
+        && nuclei -verbose \
+          -list /app/dast.urls.txt \
+          -output /.vulnerabilities/nuclei.pitchfork.log \
+          -trace-log /.vulnerabilities/nuclei.pitchfork.trace.log \
+          -error-log /.vulnerabilities/nuclei.pitchfork.error.log \
+          -store-resp-dir /.vulnerabilities/nuclei.pitchfork.report \
+          -stats \
+          -timestamp \
+          -matcher-status \
+          -debug \
+          -debug-req \
+          -debug-resp \
+          -attack-type pitchfork \
+        && nuclei -verbose \
+          -list /app/dast.urls.txt \
+          -output /.vulnerabilities/nuclei.clusterbomb.log \
+          -trace-log /.vulnerabilities/nuclei.clusterbomb.trace.log \
+          -error-log /.vulnerabilities/nuclei.clusterbomb.error.log \
+          -store-resp-dir /.vulnerabilities/nuclei.clusterbomb.report \
+          -stats \
+          -timestamp \
+          -matcher-status \
+          -debug \
+          -debug-req \
+          -debug-resp \
+          -attack-type clusterbomb
     volumes:
       - .:/app
+      - .vulnerabilities:/.vulnerabilities
     depends_on:
       backend-django:
         condition: service_started
