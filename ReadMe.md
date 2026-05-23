@@ -63,12 +63,12 @@ python3 manage.py create_units
 
 ## Backend Execution
 
-1. In terminal (Without Redis, RabbitMq and Prometheus stack):
+1. In terminal (Without React Frontend, Redis, RabbitMq, Prometheus and Grafana stack):
 ```bash
 python3 manage.py runserver
 ```
 
-2. Orchestration with Docker Compose (With Redis, RabbitMq and Prometheus stack):
+2. Orchestration with Docker Compose (With React Frontend, Redis, RabbitMq, Prometheus and Grafana stack):
 ```bash
 docker compose up --build --no-deps --force-recreate --remove-orphans
 ```

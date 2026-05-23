@@ -9,8 +9,8 @@ services:
       - local_network
     volumes:
       - .:/app
-      - /app/.jenkins_configuration
       - .vulnerabilities:/.vulnerabilities
+      - /app/.jenkins_configuration
     restart: unless-stopped
 
   jenkins:
@@ -30,8 +30,8 @@ services:
       JAVA_OPTS: -Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true
     volumes:
       - .:/app
-      - /app/.jenkins_configuration
       - .jenkins_configuration:/var/jenkins_home
+      - /app/.jenkins_configuration
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/local/bin/docker:/usr/bin/docker
     restart: unless-stopped
@@ -106,6 +106,7 @@ services:
       dockerfile: ./backend.Dockerfile
     volumes:
       - .:/app
+      - /app/.jenkins_configuration
     environment:
       ENV: ${ENVIRONMENT}
       SECRET_KEY: ${SECRET_KEY}
@@ -129,6 +130,7 @@ services:
       dockerfile: ./frontend.Dockerfile
     volumes:
       - ../../hotel-booking-frontend-reactjs/:/app
+      - /app/.jenkins_configuration
       - /app/node_modules  # Prevents local node_modules from overwriting container's
     environment:
       - CHOKIDAR_USEPOLLING=true  # Required for some OS/Docker setups to detect changes
@@ -191,6 +193,7 @@ services:
     volumes:
       - .:/app
       - .vulnerabilities:/.vulnerabilities
+      - /app/.jenkins_configuration
     depends_on:
       backend-django:
         condition: service_started
