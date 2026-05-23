@@ -26,6 +26,7 @@ class Client(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
+    # ip = models.CharField(max_length=200, blank=True)
     title = models.CharField(max_length=200, blank=True)
     first_name = models.CharField(max_length=200, blank=True)
     last_name = models.CharField(max_length=200, blank=True)

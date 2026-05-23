@@ -170,3 +170,30 @@ sentry_sdk.init(
     # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
     send_default_pii=True,
 )
+
+# Add this at the bottom of the file
+LOGGING = {
+    'version': 1,  # Specifies the logging configuration schema version
+    'disable_existing_loggers': False,  # Keep default Django loggers active
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',  # Use `{}` to format log messages
+        },
+    },
+    'handlers': {
+        'file': {  # Write logs to a file
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'app.log'),  # Log file path
+            'formatter': 'verbose',  # Use the verbose format
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',  # Log everything INFO and above
+            'propagate': True,  # Pass log messages to parent loggers
+        },
+    },
+}

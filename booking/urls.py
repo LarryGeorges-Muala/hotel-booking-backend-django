@@ -16,9 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from backend.views import metrics_view
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("booking/", include("backend.urls")),
     path('', include('django_prometheus.urls')),
+    path('metrics/', metrics_view, name='metrics'),
 ]

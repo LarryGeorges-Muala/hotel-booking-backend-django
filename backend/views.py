@@ -8,7 +8,15 @@ from django.views import generic
 from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
+from prometheus_client import generate_latest
+
 from . import _booking_modules
+
+
+def metrics_view(request):
+    """Expose Prometheus metrics, including log counters."""
+    metrics = generate_latest()  # Generate all Prometheus metrics
+    return HttpResponse(metrics, content_type='text/plain')
 
 
 @require_http_methods(['GET'])

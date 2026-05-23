@@ -1,40 +1,40 @@
 # docker compose up --build --no-deps --force-recreate --remove-orphans
 services:
-  vulnerabilities:
-    container_name: vulnerabilities-django
-    build:
-      context: .
-      dockerfile: ./vulnerabilities.Dockerfile
-    networks:
-      - local_network
-    volumes:
-      - .:/app
-      - .vulnerabilities:/.vulnerabilities
-      - /app/.jenkins_configuration
-    restart: unless-stopped
+  # vulnerabilities:
+  #   container_name: vulnerabilities-django
+  #   build:
+  #     context: .
+  #     dockerfile: ./vulnerabilities.Dockerfile
+  #   networks:
+  #     - local_network
+  #   volumes:
+  #     - .:/app
+  #     - .vulnerabilities:/.vulnerabilities
+  #     - /app/.jenkins_configuration
+  #   restart: unless-stopped
 
-  jenkins:
-    container_name: jenkins-django
-    build:
-      context: .
-      dockerfile: ./jenkins.Dockerfile
-    privileged: true
-    user: root
-    networks:
-      - local_network
-    ports:
-      - "8080:8080" # Access UI at http://localhost:8080
-      - "50000:50000"
-    environment:
-      ENV: local
-      JAVA_OPTS: -Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true
-    volumes:
-      - .:/app
-      - .jenkins_configuration:/var/jenkins_home
-      - /app/.jenkins_configuration
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/local/bin/docker:/usr/bin/docker
-    restart: unless-stopped
+  # jenkins:
+  #   container_name: jenkins-django
+  #   build:
+  #     context: .
+  #     dockerfile: ./jenkins.Dockerfile
+  #   privileged: true
+  #   user: root
+  #   networks:
+  #     - local_network
+  #   ports:
+  #     - "8080:8080" # Access UI at http://localhost:8080
+  #     - "50000:50000"
+  #   environment:
+  #     ENV: local
+  #     JAVA_OPTS: -Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true
+  #   volumes:
+  #     - .:/app
+  #     - .jenkins_configuration:/var/jenkins_home
+  #     - /app/.jenkins_configuration
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - /usr/local/bin/docker:/usr/bin/docker
+  #   restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest
@@ -143,60 +143,60 @@ services:
       backend-django:
         condition: service_started
 
-  nuclei:
-    image: projectdiscovery/nuclei:latest
-    container_name: nuclei-dast-django
-    entrypoint: 
-      - /bin/sh
-      - -c
-      - |
-        rm -rf /.vulnerabilities/* \
-        && nuclei -verbose \
-          -list /app/dast.urls.txt \
-          -output /.vulnerabilities/nuclei.batteringram.log \
-          -trace-log /.vulnerabilities/nuclei.batteringram.trace.log \
-          -error-log /.vulnerabilities/nuclei.batteringram.error.log \
-          -store-resp-dir /.vulnerabilities/nuclei.batteringram.report \
-          -stats \
-          -timestamp \
-          -matcher-status \
-          -debug \
-          -debug-req \
-          -debug-resp \
-          -attack-type batteringram \
-        && nuclei -verbose \
-          -list /app/dast.urls.txt \
-          -output /.vulnerabilities/nuclei.pitchfork.log \
-          -trace-log /.vulnerabilities/nuclei.pitchfork.trace.log \
-          -error-log /.vulnerabilities/nuclei.pitchfork.error.log \
-          -store-resp-dir /.vulnerabilities/nuclei.pitchfork.report \
-          -stats \
-          -timestamp \
-          -matcher-status \
-          -debug \
-          -debug-req \
-          -debug-resp \
-          -attack-type pitchfork \
-        && nuclei -verbose \
-          -list /app/dast.urls.txt \
-          -output /.vulnerabilities/nuclei.clusterbomb.log \
-          -trace-log /.vulnerabilities/nuclei.clusterbomb.trace.log \
-          -error-log /.vulnerabilities/nuclei.clusterbomb.error.log \
-          -store-resp-dir /.vulnerabilities/nuclei.clusterbomb.report \
-          -stats \
-          -timestamp \
-          -matcher-status \
-          -debug \
-          -debug-req \
-          -debug-resp \
-          -attack-type clusterbomb
-    volumes:
-      - .:/app
-      - .vulnerabilities:/.vulnerabilities
-      - /app/.jenkins_configuration
-    depends_on:
-      backend-django:
-        condition: service_started
+  # nuclei:
+  #   image: projectdiscovery/nuclei:latest
+  #   container_name: nuclei-dast-django
+  #   entrypoint: 
+  #     - /bin/sh
+  #     - -c
+  #     - |
+  #       rm -rf /.vulnerabilities/* \
+  #       && nuclei -verbose \
+  #         -list /app/dast.urls.txt \
+  #         -output /.vulnerabilities/nuclei.batteringram.log \
+  #         -trace-log /.vulnerabilities/nuclei.batteringram.trace.log \
+  #         -error-log /.vulnerabilities/nuclei.batteringram.error.log \
+  #         -store-resp-dir /.vulnerabilities/nuclei.batteringram.report \
+  #         -stats \
+  #         -timestamp \
+  #         -matcher-status \
+  #         -debug \
+  #         -debug-req \
+  #         -debug-resp \
+  #         -attack-type batteringram \
+  #       && nuclei -verbose \
+  #         -list /app/dast.urls.txt \
+  #         -output /.vulnerabilities/nuclei.pitchfork.log \
+  #         -trace-log /.vulnerabilities/nuclei.pitchfork.trace.log \
+  #         -error-log /.vulnerabilities/nuclei.pitchfork.error.log \
+  #         -store-resp-dir /.vulnerabilities/nuclei.pitchfork.report \
+  #         -stats \
+  #         -timestamp \
+  #         -matcher-status \
+  #         -debug \
+  #         -debug-req \
+  #         -debug-resp \
+  #         -attack-type pitchfork \
+  #       && nuclei -verbose \
+  #         -list /app/dast.urls.txt \
+  #         -output /.vulnerabilities/nuclei.clusterbomb.log \
+  #         -trace-log /.vulnerabilities/nuclei.clusterbomb.trace.log \
+  #         -error-log /.vulnerabilities/nuclei.clusterbomb.error.log \
+  #         -store-resp-dir /.vulnerabilities/nuclei.clusterbomb.report \
+  #         -stats \
+  #         -timestamp \
+  #         -matcher-status \
+  #         -debug \
+  #         -debug-req \
+  #         -debug-resp \
+  #         -attack-type clusterbomb
+  #   volumes:
+  #     - .:/app
+  #     - .vulnerabilities:/.vulnerabilities
+  #     - /app/.jenkins_configuration
+  #   depends_on:
+  #     backend-django:
+  #       condition: service_started
 
 networks:
   local_network:
