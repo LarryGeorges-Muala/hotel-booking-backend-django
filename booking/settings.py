@@ -16,6 +16,8 @@ from pathlib import Path
 from corsheaders.defaults import default_headers
 from dotenv import load_dotenv
 
+from backend.customlogger import PrometheusLogHandler
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -185,13 +187,17 @@ LOGGING = {
         'file': {  # Write logs to a file
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'app.log'),  # Log file path
+            'filename': os.path.join(BASE_DIR, 'local_app.log'),  # Log file path
             'formatter': 'verbose',  # Use the verbose format
+        },
+        'prometheus': {  # Send logs to Prometheus (custom handler)
+            'level': 'INFO',
+            'class': 'backend.customlogger.PrometheusLogHandler',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['file', 'prometheus'],  # Use both file and Prometheus handlers
             'level': 'INFO',  # Log everything INFO and above
             'propagate': True,  # Pass log messages to parent loggers
         },

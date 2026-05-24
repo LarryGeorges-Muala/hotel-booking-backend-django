@@ -45,6 +45,8 @@ node_modules/*
 *.venv
 **/*.env
 **/*.venv
+.env-processor
+**/.env-processor
 
 # Misc
 *.DS_Store*
@@ -57,20 +59,29 @@ __pycache__/
 *.pyd
 *.sqlite3
 
+# Alertmanager
+.alertmanager/_data/*
+**/.alertmanager/_data/*
+
 # Prometheus
 data
 **/data
+.prometheus/_data/*
+**/.prometheus/_data/*
+
+# Grafana
+.grafana/_data/*
+**/.grafana/_data/*
 
 # Jenkins
-.jenkins_configuration
-.jenkins_configuration/*
-**/.jenkins_configuration
-**/.jenkins_configuration/*
+.jenkins-data
+.jenkins-data/*
+**/.jenkins-data
+**/.jenkins-data/*
 
 # Local Vulnerabilities Report
 .vulnerabilities
 **/.vulnerabilities
-.nuclei
-.nuclei/*
-**/.nuclei
-**/.nuclei/*
+
+# Local Logging
+local_app.log

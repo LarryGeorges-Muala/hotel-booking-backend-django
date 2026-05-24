@@ -4,16 +4,19 @@
 
 ![Local Development](diagram/Diagram.png)
 
+---
 
 ## CI/CD
 
 > GitLab: [.gitlab-ci.yml](.gitlab-ci.yml)
 
+---
 
 ## GitOps
 
-> Argo-CD Application Spec: [argo-cd-application-spec.yaml](argo-cd/argo-cd-application-spec.yaml)
+> Argo-CD Application Spec: [argo-cd-application-spec.yaml](.argo-cd/argo-cd-application-spec.yaml)
 
+---
 
 ## DevSecOps
 
@@ -23,7 +26,7 @@
 
 > Docker Local Vulnerability Scanner, SBOM and SAST Container: [compose.yaml](compose.yaml) / [vulnerabilities.Dockerfile](vulnerabilities.Dockerfile)
 
-> DAST Scanner Container: [compose.yaml](compose.yaml)
+> DAST Scanner Container and Config: [compose.yaml](compose.yaml)
 
 - Vulnerability Scanner: [Trivy](https://github.com/aquasecurity/trivy)
 
@@ -33,6 +36,35 @@
 
 - DAST: [Nuclei](https://github.com/projectdiscovery/nuclei)
 
+---
+
+## SRE Monitoring
+
+### Metrics
+
+> Prometheus Config: [.prometheus/config/prometheus.yml](.prometheus/config/prometheus.yml)
+
+> Prometheus Rules: [.prometheus/config/prometheus.yml](.prometheus/config/prometheus.yml)
+
+> Prometheus Container: [compose.yaml](compose.yaml)
+
+### Visualization
+
+> Grafana Dashboard: [.grafana/dashboards/django-metrics-dashboard.json](.grafana/dashboards/django-metrics-dashboard.json)
+
+> Grafana Datasource: [.grafana/datasources/prometheus-datasource.yaml](.grafana/datasources/prometheus-datasource.yaml)
+
+> Grafana Alert: [.grafana/alerting/sample-django-alert.yaml](.grafana/alerting/sample-django-alert.yaml) / [.grafana/alerting/sample-django-alert-resource.yaml](.grafana/alerting/sample-django-alert-resource.yaml)
+
+> Grafana Container: [compose.yaml](compose.yaml)
+
+### Alerting
+
+> Alertmanager Config: [.alertmanager/config/alertmanager.yml](.alertmanager/config/alertmanager.yml)
+
+> Alertmanager Container: [compose.yaml](compose.yaml)
+
+---
 
 ## Backend Setup
 
@@ -60,6 +92,7 @@ python3 manage.py migrate
 python3 manage.py create_units
 ```
 
+---
 
 ## Backend Execution
 
