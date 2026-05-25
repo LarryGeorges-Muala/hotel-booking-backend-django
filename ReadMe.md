@@ -34,7 +34,7 @@
 
 - SAST: [Semgrep](https://github.com/semgrep/semgrep)
 
-- DAST: [Nuclei](https://github.com/projectdiscovery/nuclei)
+- DAST & Pen-Testing: [Nuclei](https://github.com/projectdiscovery/nuclei)
 
 ---
 
