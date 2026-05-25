@@ -180,6 +180,8 @@ services:
         condition: service_started
       redis:
         condition: service_started
+      prometheus:
+        condition: service_started
 
   frontend:
     container_name: frontend-django
@@ -205,6 +207,8 @@ services:
       - 5173:5173
     depends_on:
       backend-django:
+        condition: service_started
+      prometheus:
         condition: service_started
 
   nuclei:

@@ -44,13 +44,19 @@
 
 > Prometheus Config: [.prometheus/config/prometheus.yml](.prometheus/config/prometheus.yml)
 
-> Prometheus Rules: [.prometheus/config/prometheus.yml](.prometheus/config/prometheus.yml)
+> Prometheus Rules: [.prometheus/rules/prometheus.rules](.prometheus/rules/prometheus.rules)
 
 > Prometheus Container: [compose.yaml](compose.yaml)
 
+### Resources and Networking
+
+> OpenTelemetry Config: [.opentelemetry/config/otelcol-metrics-config.yaml](.opentelemetry/config/otelcol-metrics-config.yaml)
+
 ### Visualization
 
-> Grafana Dashboard: [.grafana/dashboards/django-metrics-dashboard.json](.grafana/dashboards/django-metrics-dashboard.json)
+> Grafana Dashboard Metrics: [.grafana/dashboards/django-metrics-dashboard.json](.grafana/dashboards/django-metrics-dashboard.json)
+
+> Grafana Dashboard Host Resources: [.grafana/dashboards/django-host-metrics-dashboard.json](.grafana/dashboards/django-host-metrics-dashboard.json)
 
 > Grafana Datasource: [.grafana/datasources/prometheus-datasource.yaml](.grafana/datasources/prometheus-datasource.yaml)
 
@@ -74,6 +80,8 @@
 ```bash
 SECRET_KEY='some-string'
 SENTRY_DNS_DJANGO='https://...ingest.us.sentry.io/...'
+ALERT_MANAGER_SLACK_API_URL="https://hooks.slack.com/services/..."
+ALERT_MANAGER_SLACK_API_CHANNEL="#..."
 ```
 
 > Note: see https://sentry.io/pricing/ for a Sentry free-trial account to gain access to the monitor dashboard
