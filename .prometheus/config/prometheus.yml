@@ -1,5 +1,6 @@
 global:
   scrape_interval:     15s # By default, scrape targets every 15 seconds.
+  evaluation_interval: 15s
 
   # Attach these labels to any time series or alerts when communicating with
   # external systems (federation, remote storage, Alertmanager).
@@ -53,5 +54,19 @@ scrape_configs:
     scrape_interval: 15s
     static_configs:
       - targets: ['host.docker.internal:3000']
+        labels:
+          group: 'systems'
+
+  - job_name: 'tempo'
+    scrape_interval: 15s
+    static_configs:
+      - targets: [ 'host.docker.internal:3200' ]
+        labels:
+          group: 'systems'
+
+  - job_name: 'alloy'
+    scrape_interval: 15s
+    static_configs:
+      - targets: [ 'host.docker.internal:12345' ]
         labels:
           group: 'systems'

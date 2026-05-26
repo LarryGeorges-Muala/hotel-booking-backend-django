@@ -73,6 +73,18 @@ data
 .grafana/_data/*
 **/.grafana/_data/*
 
+# Alloy
+.alloy/_data/*
+**/.alloy/_data/*
+
+# Loki
+.loki/_data/*
+**/.loki/_data/*
+
+# Tempo
+.tempo/_data/*
+**/.tempo/_data/*
+
 # Jenkins
 .jenkins-data
 .jenkins-data/*
@@ -85,3 +97,4 @@ data
 
 # Local Logging
 local_app.log
+debug.log

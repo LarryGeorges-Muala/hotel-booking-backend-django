@@ -187,7 +187,7 @@ LOGGING = {
         'file': {  # Write logs to a file
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'local_app.log'),  # Log file path
+            'filename': os.path.join(BASE_DIR, 'logging/debug.log'),  # Log file path
             'formatter': 'verbose',  # Use the verbose format
         },
         'prometheus': {  # Send logs to Prometheus (custom handler)

@@ -12,6 +12,23 @@ from prometheus_client import generate_latest
 
 from . import _booking_modules
 
+from opentelemetry import metrics
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import (
+    BatchSpanProcessor,
+    ConsoleSpanExporter,
+)
+
+
+trace.set_tracer_provider(TracerProvider())
+
+trace.get_tracer_provider().add_span_processor(
+    BatchSpanProcessor(ConsoleSpanExporter())
+)
+
+meter = metrics.get_meter(__name__)
+
 
 def metrics_view(request):
     """Expose Prometheus metrics, including log counters."""
@@ -21,6 +38,11 @@ def metrics_view(request):
 
 @require_http_methods(['GET'])
 def health(request):
+    request_counter = meter.create_counter(
+        name='django_health_requests_total',
+        description='Total HTTP requests',
+    )
+    request_counter.add(1, {'http.method': request.method, 'http.route': request.path})
     return JsonResponse(_booking_modules.health())
 
 

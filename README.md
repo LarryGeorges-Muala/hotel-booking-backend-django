@@ -48,19 +48,33 @@
 
 > Prometheus Container: [compose.yaml](compose.yaml)
 
+### Logging
+
+> Loki Config (via Alloy): [.loki/config/loki-config.yaml](.loki/config/loki-config.yaml)
+
+> Loki Container: [compose.yaml](compose.yaml)
+
+### Tracing
+
+> Tempo Config (via Alloy): [.tempo/config/tempo.yaml](.tempo/config/tempo.yaml)
+
+> Tempo Container: [compose.yaml](compose.yaml)
+
 ### Resources and Networking
 
-> OpenTelemetry Config: [.opentelemetry/config/otelcol-metrics-config.yaml](.opentelemetry/config/otelcol-metrics-config.yaml)
+> OpenTelemetry Config: [opentelemetry-python](https://opentelemetry-python.readthedocs.io/en/latest/examples/django/README.html)
 
 ### Visualization
 
 > Grafana Dashboard Metrics: [.grafana/dashboards/django-metrics-dashboard.json](.grafana/dashboards/django-metrics-dashboard.json)
 
-> Grafana Dashboard Host Resources: [.grafana/dashboards/django-host-metrics-dashboard.json](.grafana/dashboards/django-host-metrics-dashboard.json)
+> Grafana Prometheus Datasource: [.grafana/datasources/prometheus-datasource.yaml](.grafana/datasources/prometheus-datasource.yaml)
 
-> Grafana Datasource: [.grafana/datasources/prometheus-datasource.yaml](.grafana/datasources/prometheus-datasource.yaml)
+> Grafana Loki Datasource: [.grafana/datasources/loki-datasource.yaml](.grafana/datasources/loki-datasource.yaml)
 
-> Grafana Alert: [.grafana/alerting/sample-django-alert.yaml](.grafana/alerting/sample-django-alert.yaml) / [.grafana/alerting/sample-django-alert-resource.yaml](.grafana/alerting/sample-django-alert-resource.yaml)
+> Grafana Tempo Datasource: [.grafana/datasources/tempo-datasource.yaml](.grafana/datasources/tempo-datasource.yaml)
+
+> Grafana Alerts: [.grafana/alerting/sample-django-alert.yaml](.grafana/alerting/sample-django-alert.yaml) / [.grafana/alerting/sample-django-alert-resource.yaml](.grafana/alerting/sample-django-alert-resource.yaml)
 
 > Grafana Container: [compose.yaml](compose.yaml)
 
@@ -69,6 +83,12 @@
 > Alertmanager Config: [.alertmanager/config/alertmanager.yml](.alertmanager/config/alertmanager.yml)
 
 > Alertmanager Container: [compose.yaml](compose.yaml)
+
+### Unified Telemetry Collector
+
+> Alloy Config (for Loki / Tempo): [.alloy/config/config.alloy](.alloy/config/config.alloy)
+
+> Alloy Container: [compose.yaml](compose.yaml)
 
 ---
 
