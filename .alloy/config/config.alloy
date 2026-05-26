@@ -9,6 +9,7 @@ otelcol.receiver.otlp "otlp_receiver" {
   output {
     traces = [otelcol.exporter.otlp.grafanacloud.input,]
     metrics = [otelcol.exporter.prometheus.prom_exporter.input]
+    logs    = [otelcol.processor.batch.default.input]
   }
 }
 
@@ -28,17 +29,6 @@ otelcol.exporter.prometheus "prom_exporter" {
 prometheus.remote_write "prom_write" {
   endpoint {
     url = "http://prometheus:9090/api/v1/write"
-  }
-}
-
-
-
-otelcol.receiver.otlp "default" {
-  http {}
-  grpc {}
-
-  output {
-    logs    = [otelcol.processor.batch.default.input]
   }
 }
 
