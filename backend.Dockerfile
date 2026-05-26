@@ -52,6 +52,7 @@ RUN rm -rf ./.alertmanager \
     && rm -rf ./.vulnerabilities
 
 RUN rm -rf ./logging/* || mkdir ./logging
+RUN touch ./logging/debug.log || true
 
 # Expose the Django port
 EXPOSE 8000 8888
