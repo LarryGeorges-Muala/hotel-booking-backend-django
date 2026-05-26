@@ -151,7 +151,7 @@ python3 manage.py rabbitmq_read_queue --host localhost --queue booking
 
 > Ansible Host Dockerfile: [vulnerabilities.Dockerfile](vulnerabilities.Dockerfile)
 
-> Ansible Python3.12+ Requirements: [.ansible/ansible.requirements.txt](.ansible/ansible.requirements.txt)
+> Ansible Python3.12+ Requirements: [ansible/ansible-requirements.txt](ansible/ansible-requirements.txt)
 
 ```bash
 python3 -m venv ./.ansible/.venv-ansible
