@@ -41,11 +41,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app/
 
 RUN rm -rf ./.alertmanager \
+    && rm -rf ./.alloy \
     && rm -rf ./.dast \
     && rm -rf ./.grafana \
     && rm -rf ./.jenkins-data \
+    && rm -rf ./.loki \
     && rm -rf ./.opentelemetry \
     && rm -rf ./.prometheus \
+    && rm -rf ./.tempo \
     && rm -rf ./.vulnerabilities
 
 RUN rm -rf ./logging/* || mkdir ./logging
@@ -53,13 +56,12 @@ RUN rm -rf ./logging/* || mkdir ./logging
 # Expose the Django port
 EXPOSE 8000 8888
 
-RUN pip install \
-  opentelemetry-api==1.41.0 \
-  opentelemetry-sdk==1.41.0 \
-  opentelemetry-instrumentation-django==0.62b0 \
-  opentelemetry-exporter-otlp==1.41.0
-
-RUN pip install opentelemetry-distro==0.61b0
+RUN pip install --no-cache-dir \
+  opentelemetry-api \
+  opentelemetry-sdk \
+  opentelemetry-instrumentation-django \
+  opentelemetry-exporter-otlp \
+  opentelemetry-distro
 
 RUN opentelemetry-bootstrap -a install
 
