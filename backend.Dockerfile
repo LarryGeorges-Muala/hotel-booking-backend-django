@@ -42,6 +42,7 @@ COPY . /app/
 
 RUN rm -rf ./.alertmanager \
     && rm -rf ./.alloy \
+    && rm -rf ./.ansible \
     && rm -rf ./.dast \
     && rm -rf ./.grafana \
     && rm -rf ./.jenkins-data \

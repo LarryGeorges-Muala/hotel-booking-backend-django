@@ -38,6 +38,34 @@
 
 ---
 
+## IaC Config Tooling
+
+> Ansible Inventory: [.ansible/inventory/docker_hosts.ini](.ansible/inventory/docker_hosts.ini)
+
+> Ansible Vulnerabilities Playbook: [.ansible/playbooks/vulnerabilities_local_scan.yaml](.ansible/playbooks/vulnerabilities_local_scan.yaml)
+
+> Ansible Host Dockerfile: [vulnerabilities.Dockerfile](vulnerabilities.Dockerfile)
+
+> Ansible Python3.12+ Requirements: [.ansible/ansible.requirements.txt](.ansible/ansible.requirements.txt)
+
+```bash
+python3 -m venv ./.ansible/.venv-ansible
+
+source ./.ansible/.venv-ansible/bin/activate
+
+python3 -m pip install -r ./.ansible/ansible-requirements.txt
+
+ansible-inventory -i ./.ansible/inventory/docker_hosts.ini --list
+
+ansible-playbook -i ./.ansible/inventory/docker_hosts.ini ./.ansible/playbooks/vulnerabilities_local_scan.yaml
+
+deactivate
+
+rm -rf ./.ansible/.venv-ansible
+```
+
+---
+
 ## SRE Monitoring
 
 ### Metrics
