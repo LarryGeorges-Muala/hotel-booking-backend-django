@@ -13,7 +13,8 @@ django_sanity:
     - python -m venv ./.venv
     - source ./.venv/bin/activate
     - pip install --no-cache-dir -r requirements.txt
-    - rm -rf ./logging/* || mkdir ./logging
+    - mkdir $CI_PROJECT_DIR/logging || true
+    - touch $CI_PROJECT_DIR/logging/debug.log || true
     - python manage.py check
     - deactivate
     - rm -rf ./.venv
