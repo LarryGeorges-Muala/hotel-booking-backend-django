@@ -38,34 +38,6 @@
 
 ---
 
-## IaC Config Tooling
-
-> Ansible Inventory: [.ansible/inventory/docker_hosts.ini](.ansible/inventory/docker_hosts.ini)
-
-> Ansible Vulnerabilities Playbook: [.ansible/playbooks/vulnerabilities_local_scan.yaml](.ansible/playbooks/vulnerabilities_local_scan.yaml)
-
-> Ansible Host Dockerfile: [vulnerabilities.Dockerfile](vulnerabilities.Dockerfile)
-
-> Ansible Python3.12+ Requirements: [.ansible/ansible.requirements.txt](.ansible/ansible.requirements.txt)
-
-```bash
-python3 -m venv ./.ansible/.venv-ansible
-
-source ./.ansible/.venv-ansible/bin/activate
-
-python3 -m pip install -r ./.ansible/ansible-requirements.txt
-
-ansible-inventory -i ./.ansible/inventory/docker_hosts.ini --list
-
-ansible-playbook -i ./.ansible/inventory/docker_hosts.ini ./.ansible/playbooks/vulnerabilities_local_scan.yaml
-
-deactivate
-
-rm -rf ./.ansible/.venv-ansible
-```
-
----
-
 ## SRE Monitoring
 
 ### Metrics
@@ -167,4 +139,32 @@ docker compose up --build --no-deps --force-recreate --remove-orphans
 3. In a separate terminal, run the following to start the RabbitMq queue reader and consume messages:
 ```bash
 python3 manage.py rabbitmq_read_queue --host localhost --queue booking
+```
+
+---
+
+## IaC Config Tooling
+
+> Ansible Inventory: [.ansible/inventory/docker_hosts.ini](.ansible/inventory/docker_hosts.ini)
+
+> Ansible Vulnerabilities Playbook: [.ansible/playbooks/vulnerabilities_local_scan.yaml](.ansible/playbooks/vulnerabilities_local_scan.yaml)
+
+> Ansible Host Dockerfile: [vulnerabilities.Dockerfile](vulnerabilities.Dockerfile)
+
+> Ansible Python3.12+ Requirements: [.ansible/ansible.requirements.txt](.ansible/ansible.requirements.txt)
+
+```bash
+python3 -m venv ./.ansible/.venv-ansible
+
+source ./.ansible/.venv-ansible/bin/activate
+
+python3 -m pip install -r ./.ansible/ansible-requirements.txt
+
+ansible-inventory -i ./.ansible/inventory/docker_hosts.ini --list
+
+ansible-playbook -i ./.ansible/inventory/docker_hosts.ini ./.ansible/playbooks/vulnerabilities_local_scan.yaml
+
+deactivate
+
+rm -rf ./.ansible/.venv-ansible
 ```
