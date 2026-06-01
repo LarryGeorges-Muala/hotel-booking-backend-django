@@ -27,23 +27,23 @@ pipeline {
                 }
             }
         }
-        stage('Build') {
+        stage('Tag') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     retry(2) {
                         sh '''
-                            docker build -f backend.Dockerfile -t backend/django:$GIT_COMMIT .
                             docker tag backend/django:$GIT_COMMIT backend/django:${env.GIT_COMMIT_SHORT}
                         '''
                     }
                 }
             }
         }
-        stage('Tag') {
+        stage('Build') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     retry(2) {
                         sh '''
+                            docker build -f backend.Dockerfile -t backend/django:$GIT_COMMIT .
                             docker tag backend/django:$GIT_COMMIT backend/django:${env.GIT_COMMIT_SHORT}
                         '''
                     }
