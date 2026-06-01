@@ -10,6 +10,8 @@
 
 > GitLab: [.gitlab-ci.yml](.gitlab-ci.yml)
 
+> Jenkins: [Jenkinsfile](Jenkinsfile)
+
 ---
 
 ## GitOps
@@ -22,7 +24,7 @@
 
 > Jenkins Container: [compose.yaml](compose.yaml) / [jenkins.Dockerfile](jenkins.Dockerfile)
 
-> Jenkins Pipeline with Vulnerability Scanner, SBOM and SAST: [Jenkinsfile](Jenkinsfile)
+> Jenkins Pipeline with Vulnerability Scanner, SBOM and SAST: [JenkinsfileScan](JenkinsfileScan)
 
 > Docker Local Vulnerability Scanner, SBOM and SAST Container: [compose.yaml](compose.yaml) / [vulnerabilities.Dockerfile](vulnerabilities.Dockerfile)
 
