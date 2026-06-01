@@ -2,7 +2,15 @@
 
 ## Diagram
 
-![Local Development](diagram/Diagram.png)
+> Local Development Diagram
+
+![Local Development](diagrams/Diagram.png)
+
+---
+
+> CI/CD/GitOps Strategy Diagram
+
+![Diagram GitOps](diagrams/GitOps-Diagram.png)
 
 ---
 
