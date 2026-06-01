@@ -31,9 +31,9 @@ pipeline {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     retry(2) {
-                        sh '''
+                        script {
                             docker tag backend/django:$GIT_COMMIT backend/django:${env.GIT_COMMIT_SHORT}
-                        '''
+                        }
                     }
                 }
             }
