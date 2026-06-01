@@ -31,7 +31,7 @@ super-chart:
           image:
             repository: public-repo-hotel-booking-django
             pullPolicy: IfNotPresent
-            tag: "latest"
+            tag: "$ARGOCD_APP_REVISION"
           podAnnotations: {}
           podLabels: {}
           podSecurityContext: {}
