@@ -1,6 +1,29 @@
 pipeline {
     agent any
     stages {
+        stage('Log Commit') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    retry(1) {
+                        sh '''
+                            echo Current SHA is: $GIT_COMMIT
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Log Commit - Short SHA') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    retry(1) {
+                        script {
+                            def shortCommit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                            echo "Short Commit Hash: ${shortCommit}"
+                        }
+                    }
+                }
+            }
+        }
         stage('Trivy') {
             when {
                 changeRequest() 
