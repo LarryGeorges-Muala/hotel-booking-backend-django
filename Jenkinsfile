@@ -24,6 +24,17 @@ pipeline {
                 }
             }
         }
+        stage('Build') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    retry(2) {
+                        sh '''
+                            docker build -f backend.Dockerfile -t backend/django:$GIT_COMMIT .
+                        '''
+                    }
+                }
+            }
+        }
         stage('Trivy') {
             when {
                 changeRequest() 
