@@ -39,6 +39,17 @@ pipeline {
                 }
             }
         }
+        stage('Tag') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    retry(2) {
+                        sh '''
+                            docker tag backend/django:$GIT_COMMIT backend/django:${env.GIT_COMMIT_SHORT}
+                        '''
+                    }
+                }
+            }
+        }
         stage('Trivy') {
             when {
                 changeRequest() 
