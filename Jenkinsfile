@@ -78,7 +78,7 @@ pipeline {
                 }
             }
         }
-        stage('Build') {
+        stage('Builder') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     retry(2) {
