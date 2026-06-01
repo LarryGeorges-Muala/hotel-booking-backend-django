@@ -1,6 +1,21 @@
 pipeline {
     agent any
+    environment {
+        GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+    }
     stages {
+        stage('Log Commit') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    retry(1) {
+                        sh '''
+                            echo Current SHA is: $GIT_COMMIT
+                            echo Current Short SHA is: ${env.GIT_COMMIT_SHORT}
+                        '''
+                    }
+                }
+            }
+        }
         stage('Trivy') {
             when {
                 changeRequest() 
@@ -35,6 +50,20 @@ pipeline {
                             mkdir /scans
                             syft /app -o cyclonedx-json=/scans/sbom.json
                             grype sbom:/scans/sbom.json
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Build') {
+            when {
+                changeRequest() 
+            }
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    retry(2) {
+                        sh '''
+                            docker build -f backend.Dockerfile -t backend/django:$GIT_COMMIT .
                         '''
                     }
                 }

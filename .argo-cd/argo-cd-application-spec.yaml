@@ -7,10 +7,13 @@ spec:
     name: 'in-cluster'
     namespace: 'dev'
   source:
-    path: 'argo-cd/chart'
+    path: '.argo-cd/chart'
     repoURL: 'https://github.com/LarryGeorges-Muala/hotel-booking-backend-django'
     targetRevision: HEAD
     helm:
+      parameters:
+      - name: "super-chart.deployments[0].containers[0].image.tag"
+        value: "$ARGOCD_APP_REVISION"
       valueFiles:
       - values.yaml
   project: 'default'
