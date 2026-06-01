@@ -10,41 +10,7 @@ pipeline {
                     retry(1) {
                         sh '''
                             echo Current SHA is: $GIT_COMMIT
-                        '''
-                    }
-                }
-            }
-        }
-        stage('Log Commit - Short SHA') {
-            steps {
-                timeout(time: 1, unit: 'MINUTES') {
-                    retry(1) {
-                        script {
-                            def shortCommit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                            echo "Short Commit Hash: ${shortCommit}"
-                        }
-                    }
-                }
-            }
-        }
-        stage('Tag') {
-            steps {
-                timeout(time: 10, unit: 'MINUTES') {
-                    retry(2) {
-                        script {
-                            echo "docker tag backend/django:$GIT_COMMIT backend/django:${env.GIT_COMMIT_SHORT}"
-                        }
-                    }
-                }
-            }
-        }
-        stage('Build') {
-            steps {
-                timeout(time: 10, unit: 'MINUTES') {
-                    retry(2) {
-                        sh '''
-                            docker build -f backend.Dockerfile -t backend/django:$GIT_COMMIT .
-                            docker tag backend/django:$GIT_COMMIT backend/django:${env.GIT_COMMIT_SHORT}
+                            echo Current Short SHA is: ${env.GIT_COMMIT_SHORT}
                         '''
                     }
                 }
@@ -89,13 +55,15 @@ pipeline {
                 }
             }
         }
-        stage('Builder') {
+        stage('Build') {
+            when {
+                changeRequest() 
+            }
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     retry(2) {
                         sh '''
                             docker build -f backend.Dockerfile -t backend/django:$GIT_COMMIT .
-                            docker tag backend/django:$GIT_COMMIT backend/django:${env.GIT_COMMIT_SHORT}
                         '''
                     }
                 }
