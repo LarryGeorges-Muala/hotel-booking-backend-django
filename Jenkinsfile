@@ -117,6 +117,37 @@ pipeline {
                 }
             }
         }
+        stage('Secrets - NonProd') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    retry(1) {
+                        sh '''
+                            echo "Push secrets to Non-Prod Secrets Server with version $GIT_COMMIT"
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Secrets - Prod') {
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'master'
+                }
+            }
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    retry(1) {
+                        sh '''
+                            echo "Push secrets to Prod Secrets Server with version $GIT_COMMIT"
+                        '''
+                    }
+                }
+            }
+        }
         stage('ArgoCD - NonProd') {
             when {
                 branch 'develop'
