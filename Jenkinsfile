@@ -18,7 +18,7 @@ pipeline {
         }
         stage('Trivy') {
             when {
-                changeRequest() 
+                changeRequest()
             }
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
@@ -37,7 +37,7 @@ pipeline {
         }
         stage('SBOM - Syft/Grype') {
             when {
-                changeRequest() 
+                changeRequest()
             }
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
@@ -57,13 +57,61 @@ pipeline {
         }
         stage('Build') {
             when {
-                changeRequest() 
+                anyOf {
+                    branch 'main'
+                    branch 'master'
+                    branch 'develop'
+                }
             }
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     retry(2) {
                         sh '''
                             docker build -f backend.Dockerfile -t backend/django:$GIT_COMMIT .
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Regression') {
+            when {
+                allOf {
+                    changeRequest()
+                    anyOf {
+                        changeRequest target: 'main'
+                        changeRequest target: 'master'
+                    }
+                }
+            }
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                    retry(0) {
+                        sh '''
+                            echo "Run Regression Pack"
+                        '''
+                    }
+                }
+            }
+        }
+        stage('DAST') {
+            when {
+                allOf {
+                    changeRequest()
+                    anyOf {
+                        changeRequest target: 'main'
+                        changeRequest target: 'master'
+                    }
+                }
+            }
+            steps {
+                timeout(time: 30, unit: 'MINUTES') {
+                    retry(0) {
+                        sh '''
+                            git clone https://github.com/projectdiscovery/nuclei.git;
+                            cd nuclei/cmd/nuclei;
+                            go build;
+                            mv nuclei /usr/local/bin/;
+                            nuclei -version;
                         '''
                     }
                 }
