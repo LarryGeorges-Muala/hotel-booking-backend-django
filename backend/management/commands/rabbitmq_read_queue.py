@@ -1,5 +1,6 @@
-import pika, sys, os
 from django.core.management.base import BaseCommand, CommandError
+from common import _rabbitmq_modules
+from backend import _booking_modules
 
 
 class Command(BaseCommand):
@@ -20,53 +21,45 @@ class Command(BaseCommand):
             default='booking'
         )
 
+    def display_host(self, rabbit_host):
+        self.stdout.write(
+            self.style.WARNING(f"Connecting to: {rabbit_host}")
+        )
+
+    def display_queue(self, rabbit_queue):
+        self.stdout.write(
+            self.style.WARNING(f"Reading From Queue: {rabbit_queue}")
+        )
+
+    def start_processing_queue(self, body):
+        self.stdout.write(
+            self.style.WARNING(f" [x] Received {body}")
+        )
+        # Process content
+        if _rabbitmq_modules.RABBIT_MQ_INSTRUCTION_CACHE_UNITS in str(body):
+            if _rabbitmq_modules.RABBIT_MQ_INSTRUCTION_CACHE_UNITS == str(body, encoding="utf-8"):
+                _booking_modules.load_and_cache_units_details()
+
+    def queue_on_standby(self):
+        self.stdout.write(
+            self.style.SUCCESS(' [*] Waiting for messages. To exit press CTRL+C')
+        )
+
+    def shutdown_queue(self):
+        self.stdout.write(
+            self.style.NOTICE('Shutting down...')
+        )
+
     def handle(self, *args, **options):
-        try:
-            rabbit_queue = options["queue"]
-            rabbit_host = options["host"]
+        rabbit_queue = options["queue"]
+        rabbit_host = options["host"]
 
-            self.stdout.write(
-                self.style.WARNING(f"Reading From Queue: {rabbit_queue}")
-            )
-            self.stdout.write(
-                self.style.WARNING(f"Connecting to: {rabbit_host}")
-            )
-
-            connection = pika.BlockingConnection(
-                pika.ConnectionParameters(
-                    host=rabbit_host
-                )
-            )
-            channel = connection.channel()
-
-            channel.queue_declare(
-                queue=rabbit_queue,
-                durable=True,
-                arguments={
-                    'x-queue-type': 'quorum'
-                }
-            )
-
-            def callback(ch, method, properties, body):
-                self.stdout.write(
-                    self.style.WARNING(f" [x] Received {body}")
-                )
-
-                # Add operation after retrieving from queue
-
-            channel.basic_consume(
-                queue=rabbit_queue,
-                on_message_callback=callback,
-                auto_ack=True
-            )
-
-            self.stdout.write(
-                self.style.SUCCESS(' [*] Waiting for messages. To exit press CTRL+C')
-            )
-            channel.start_consuming()
-        except KeyboardInterrupt:
-            self.stdout.write(
-                self.style.NOTICE('Shutting down...')
-            )
-        except Exception as e:
-            raise CommandError(e)
+        _rabbitmq_modules.read_from_rabbit_queue(
+            self.display_host,
+            self.display_queue,
+            self.start_processing_queue,
+            self.queue_on_standby,
+            self.shutdown_queue,
+            rabbit_queue,
+            rabbit_host
+        )

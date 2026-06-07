@@ -1,215 +1,91 @@
-import traceback, json, re, pycountry, redis, pika, sentry_sdk
-from datetime import date, datetime
+import json, re, pycountry
+from datetime import date, datetime, timedelta
+from django.core.exceptions import ValidationError
 from . import models
+from common import _common_modules, _rabbitmq_modules, _redis_modules
 
 
 '''
-Loggers
+    Units - Load Details
 '''
-def logger_error(msg):
+def load_and_cache_units_details(cached_units_key=_common_modules.CACHED_UNITS_KEY_GLOBAL):
+    units_list = []
     try:
-        print('\n............................')
-        print(msg)
-        print(traceback.format_exc())
-        print('............................\n')
-        # sentry_sdk.capture_message(msg, level="error")
-        return True
-    except Exception as e:
-        print(e)
-    return False
-
-
-def logger_info(msg):
-    print('\n............................')
-    print(msg)
-    print('............................\n')
-    return True
-
-
-'''
-Visual Aid
-'''
-def improve_log_readability():
-    print('\n............................')
-    return True
-
-
-'''
-Health Endpoint
-'''
-def health():
-    return {
-        'status': 'up',
-        'current_time': datetime.now()
-    }
-
-
-'''
-Redis Session - Create
-'''
-def create_redis_session(package_name, payload):
-    try:
-        r = redis.Redis(
-            host='localhost',
-            port=6379,
-            decode_responses=True
+        units = models.Unit.objects.filter(
+            active=True
         )
-        try:
-            # Save session
-            r.hset(package_name, mapping=payload)
-            # Check session
-            user_session = r.hgetall(package_name)
-            # Session expiration
-            r.expire(
-                package_name,
-                (3600 * 24)
-            )
-            logger_info(
-                f'''
-                Redis session '{package_name}'
-                {type(user_session)}
-                {user_session}
-                '''
-            )
-            r.close()
-            return True
-        except Exception as e:
-            logger_error(e)
-            r.close()
-    except Exception as e:
-        logger_error(e)
-    return False
-
-
-'''
-Redis Session - Fetch
-'''
-def fetch_redis_session(package_name):
-    user_session = {}
-    try:
-        r = redis.Redis(
-            host='localhost',
-            port=6379,
-            decode_responses=True
-        )
-        try:
-            # Check session
-            user_session = r.hgetall(package_name)
-            logger_info(
-                f'''
-                Redis session '{package_name}'
-                {type(user_session)}
-                {user_session}
-                '''
-            )
-            r.close()
-        except Exception as e:
-            logger_error(e)
-            r.close()
-    except Exception as e:
-        logger_error(e)
-    return user_session
-
-
-'''
-Redis Session - Clear
-'''
-def clear_redis_session(package_name):
-    try:
-        r = redis.Redis(
-            host='localhost',
-            port=6379,
-            decode_responses=True
-        )
-        try:
-            # Check session
-            r.delete(package_name)
-            logger_info(
-                f'''
-                Redis session deleted '{package_name}'
-                '''
-            )
-            r.close()
-            return True
-        except Exception as e:
-            logger_error(e)
-            r.close()
-    except Exception as e:
-        logger_error(e)
-    return False
-
-
-'''
-Rabbit - Record
-'''
-def add_to_rabbit_queue(payload, payload_type=''):
-    rabbit_queue = 'booking'
-    try:
-        connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-        channel = connection.channel()
-        channel.queue_declare(
-            queue=rabbit_queue,
-            durable=True,
-            arguments={'x-queue-type': 'quorum'}
-        )
-        try:
-            if payload_type == 'json':
-                channel.basic_publish(
-                    exchange='',
-                    routing_key=rabbit_queue,
-                    body=json.dumps(payload),
-                    properties=pika.BasicProperties(content_type='application/json')
-                )
-            else:
-                channel.basic_publish(
-                    exchange='',
-                    routing_key=rabbit_queue,
-                    body=payload
-                )
-            logger_info(f" [x] Sent '{payload}'")
-            connection.close()
-            return True
-        except Exception as e:
-            logger_error(e)
-            connection.close()
-    except Exception as e:
-        logger_error(e)
-    return False
-
-
-'''
-Units
-'''
-def load_units_from_database(payload):
-    try:
-        if not isinstance(payload, dict):
-            payload = json.loads(payload)
-        units_list = []
-        units = models.Unit.objects.filter(active=True)
         for unit in units:
             # Load calendar per unit
             calendar = []
             booking_entries = unit.booking_set.all()
             for entry in booking_entries:
                 calendar = calendar + entry.generate_calendar()
+            calendar = list(dict.fromkeys(calendar))
 
-            # Load details per unit
-            units_list.append({
-                'id': unit.id,
-                'name': unit.name,
-                'type': unit.type,
-                'number_of_rooms': unit.number_of_rooms,
-                'number_of_bathrooms': unit.number_of_bathrooms,
-                'price': unit.price,
-                'occupancy': unit.occupancy,
-                'breakfast': unit.breakfast,
-                'breakfast_price': unit.breakfast_price,
-                'calendar': calendar,
-            })
-        payload['units'] = units_list
+            # Find a gap in the calendar
+            next_available = date.today()
+            for i in range(365):
+                check = date.today() + timedelta(days=i)
+                next_available = check
+                if check not in calendar:
+                    break
 
+            # Load details per active unit
+            if unit.active:
+                units_list.append({
+                    'id': unit.id,
+                    'thumbnail': 'http://localhost:8000/media/{}'.format(unit.thumbnail) if unit.thumbnail else 'http://localhost:8000/static/default.avif',
+                    'name': unit.name,
+                    'type': unit.type,
+                    'number_of_rooms': unit.number_of_rooms_in_unit(),
+                    'number_of_bathrooms': unit.number_of_bathrooms_in_unit(),
+                    'price': unit.price,
+                    'occupancy': unit.occupancy,
+                    'breakfast': unit.breakfast,
+                    'breakfast_price': unit.breakfast_price,
+                    'calendar': calendar,
+                    'next_available': next_available,
+                    'album': unit.generate_unit_album(),
+                })
+
+        # Cache Units
+        _redis_modules.create_redis_session(
+            cached_units_key,
+            {
+                'untis_list': json.dumps(units_list, default=str)
+            },
+            False
+        )
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
+    return units_list
+
+
+'''
+Units - Query Cache or DB
+'''
+def load_units_from_cache_or_database(payload):
+    try:
+        units_list = []
+        cached_units_key = _common_modules.CACHED_UNITS_KEY_GLOBAL
+
+        ''' From Redis '''
+        cached_units = _redis_modules.fetch_redis_session(cached_units_key)
+        if cached_units:
+            units_list = cached_units.get('untis_list', [])
+            if type(units_list) == str:
+                units_list = json.loads(units_list)
+
+        ''' From DB '''
+        if not cached_units or not units_list:
+            if not isinstance(payload, dict):
+                payload = json.loads(payload)
+            units_list = load_and_cache_units_details(cached_units_key)
+        
+        ''' Add units to payload '''
+        payload['units'] = units_list
+    except Exception as e:
+        _common_modules.logger_error(e)
     return payload
 
 
@@ -218,14 +94,14 @@ Test Each Booking Field
 '''
 def test_booking_fields(booking_data, booking_field):
     try:
-        logger_info(f"Checking field '{booking_field}'...")
+        _common_modules.logger_info(f"Checking field '{booking_field}'...")
         if booking_field in booking_data:
-            logger_info(f"'{booking_field}' valid..")
+            _common_modules.logger_info(f"'{booking_field}' valid..")
             return True
         else:
-            logger_info(f"'{booking_field}' missing..")
+            _common_modules.logger_info(f"'{booking_field}' missing..")
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return False
 
 
@@ -238,7 +114,7 @@ def is_email_valid(email):
         if re.fullmatch(regex, email):
             return True
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return False
 
 
@@ -249,12 +125,12 @@ def is_country_valid(country):
     try:
         check = pycountry.countries.get(alpha_2=country)
         if check:
-            logger_info(f"'{country}' valid..")
+            _common_modules.logger_info(f"'{country}' valid..")
             return True
         else:
-            logger_info(f"'{country}' invalid..")
+            _common_modules.logger_info(f"'{country}' invalid..")
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return False
 
 
@@ -267,14 +143,14 @@ def main_guest_validator(booking_data, booking_field):
             case 'email':
                 is_email_valid(booking_data['email'])
             case 'phone':
-                logger_info('No validation required - Phone number optional...')
+                _common_modules.logger_info('No validation required - Phone number optional...')
             case 'countriesfield':
                 is_country_valid(booking_data['countriesfield'])
             case _:
-                logger_info('No validation required...')
+                _common_modules.logger_info('No validation required...')
         return True
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return False
 
 
@@ -283,12 +159,12 @@ Confirm Booking Main Guest
 '''
 def confirm_booking_main_guest(booking_data, booking_field):
     try:
-        logger_info(f'''Checking field '{booking_field}'...''')
+        _common_modules.logger_info(f'''Checking field '{booking_field}'...''')
 
         # Filtering main guest
         if 'main_guest' in str(booking_field).lower():
             if 'main_guest' in booking_data:
-                logger_info(f'''{booking_field} - Main guest loaded...''')
+                _common_modules.logger_info(f'''{booking_field} - Main guest loaded...''')
                 main_guest_dict = json.loads(booking_field)
                 main_guest = main_guest_dict['main_guest']
                 for key, value in main_guest.items():
@@ -296,11 +172,11 @@ def confirm_booking_main_guest(booking_data, booking_field):
                     main_guest_validator(main_guest, key)
                 return True
             else:
-                logger_error(f'''{booking_field} - Main guest missing...''')
+                _common_modules.logger_error(f'''{booking_field} - Main guest missing...''')
         else:
-            logger_error(f'''Main guest details missing from field \n '{booking_field}'... ''')
+            _common_modules.logger_error(f'''Main guest details missing from field \n '{booking_field}'... ''')
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return False
 
 
@@ -325,14 +201,14 @@ def validate_booking_fields(booking_data):
 
         # Validation Main Guest
         confirm_booking_main_guest(booking_data, booking_main_guest[0])
-        improve_log_readability()
+        _common_modules.improve_log_readability()
 
         # Validation Details Loop
         for field in booking_fields:
             test_booking_fields(booking_data, field)
         return True
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return False
 
 
@@ -352,14 +228,14 @@ def validate_booking_dates_format(date_entry, date_entry_name):
     try:
         if '-' in str(date_entry).lower(): 
             if ' ' not in str(date_entry).lower():
-                logger_info(f''''{date_entry_name}' - '{date_entry}' valid... ''')
+                _common_modules.logger_info(f''''{date_entry_name}' - '{date_entry}' valid... ''')
                 return True
             else:
-                logger_error(f'''Invalid date format from '{date_entry_name}' - '{date_entry}' - Please use format 'YYYY-MM-DD'...''')
+                _common_modules.logger_error(f'''Invalid date format from '{date_entry_name}' - '{date_entry}' - Please use format 'YYYY-MM-DD'...''')
         else:
-            logger_error(f'''Invalid date format from '{date_entry_name}' - '{date_entry}' - Please use format 'YYYY-MM-DD'...''')
+            _common_modules.logger_error(f'''Invalid date format from '{date_entry_name}' - '{date_entry}' - Please use format 'YYYY-MM-DD'...''')
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return False
 
 
@@ -378,13 +254,13 @@ def read_booking_dates(date_entry, date_entry_name):
                 if today <= date_obj:
                     return date_obj
                 else:
-                    logger_error(f'''Invalid date format from '{date_entry_name}' - '{date_entry}' - Please set a recent date...''')
+                    _common_modules.logger_error(f'''Invalid date format from '{date_entry_name}' - '{date_entry}' - Please set a recent date...''')
             else:
-                logger_error(f'''Invalid date format from '{date_entry_name}' - '{date_entry}'...''')
+                _common_modules.logger_error(f'''Invalid date format from '{date_entry_name}' - '{date_entry}'...''')
         else:
-            logger_error(f'''Invalid date format from '{date_entry_name}' - '{date_entry}'...''')
+            _common_modules.logger_error(f'''Invalid date format from '{date_entry_name}' - '{date_entry}'...''')
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return None
 
 
@@ -395,7 +271,7 @@ def calculate_booking_duration(checkin, checkout):
     try:
         return (datetime(checkout.year, checkout.month, checkout.day) - datetime(checkin.year, checkin.month, checkin.day)).days
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return 0
 
 
@@ -408,14 +284,14 @@ def compare_booking_dates(checkin, checkout):
             # if int(checkin.timestamp() * 1000) < int(checkout.timestamp() * 1000):
             if mark_time(checkin) < mark_time(checkout):
                 days_difference = calculate_booking_duration(checkin, checkout)
-                logger_info(f''' Duration: {days_difference} night(s)''')
+                _common_modules.logger_info(f''' Duration: {days_difference} night(s)''')
                 return days_difference
             else:
-                logger_error(f'''Invalid Check-Out Date from '{checkout}' compared to '{checkin}'...''')
+                _common_modules.logger_error(f'''Invalid Check-Out Date from '{checkout}' compared to '{checkin}'...''')
         else:
-            logger_error(f'''Invalid Check-Out Date from '{checkout}' compared to '{checkin}'...''')
+            _common_modules.logger_error(f'''Invalid Check-Out Date from '{checkout}' compared to '{checkin}'...''')
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return 0
 
 
@@ -432,10 +308,10 @@ def generate_booking_times(date_entry, time_entry, description):
             int(time_list[0]),
             int(time_list[1])
         )
-        logger_info(f''' '{description} time': '{time_entry}' / {genarated_date}... ''')
+        _common_modules.logger_info(f''' '{description} time': '{time_entry}' / {genarated_date}... ''')
         return genarated_date
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return None
 
 
@@ -456,7 +332,7 @@ def check_room_availability(checkin, checkout, booking_duration):
             }
         ]
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return []
 
 
@@ -479,22 +355,22 @@ def generate_guests_price(booking_duration, guests_number, breakfast, unit_id):
             breakfast_price = unit.breakfast_price
         breakfast_enabled = str(breakfast)
         breakfast_enabled = breakfast_enabled in ['true', 'on']
-        logger_info(f''' USD {price_guest:,} per guest per night... ''')
+        _common_modules.logger_info(f''' USD {price_guest:,} per guest per night... ''')
 
         if breakfast_enabled:
             total = int(booking_duration) * int(guests_number) * (price_guest + breakfast_price)
-            logger_info(f'''
+            _common_modules.logger_info(f'''
     Including breakfast...
     USD {breakfast_price:,} per guest per breakfast...
     For {guests_number} guest(s) with breakfast and {booking_duration} night(s): USD {total:,}...
             ''')
         else:
             total = int(booking_duration) * int(guests_number) * price_guest
-            logger_info(f'''
+            _common_modules.logger_info(f'''
     For {guests_number} guest(s) and {booking_duration} night(s): USD {total:,}...
             ''')
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return total
 
 
@@ -507,7 +383,7 @@ def capitalize_first_letter(text):
             return text
         return text[:1].upper() + text[1:]
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return ''
 
 def interpret_option(handler):
@@ -518,7 +394,7 @@ def interpret_option(handler):
         else:
             return capitalize_first_letter('no')
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return ''
 
 def render_option_summary(handler, unit_id):
@@ -547,29 +423,15 @@ def render_option_summary(handler, unit_id):
     Enjoy Your Stay!
     '''
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return ''
 
 def mark_time(date_entry):
     try:
         return int(date_entry.timestamp() * 1000)
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return None
-
-
-'''
-Decode Content
-'''
-def format_request_parameters(payload, payload_type):
-    try:
-        logger_info(type(payload))
-        if payload_type == 'json':
-            payload = json.loads(payload.decode('utf-8'))
-            logger_info(type(payload))
-    except Exception as e:
-        logger_error(e)
-    return payload
 
 
 '''
@@ -578,32 +440,32 @@ Handle Booking
 def create_booking(payload, payload_type):
     booking_finalization = {}
     try:
-        payload = format_request_parameters(payload, payload_type)
+        payload = _common_modules.format_request_parameters(payload, payload_type)
 
         booking_id = mark_time(datetime.now())
         registration_id = datetime.now()
 
-        improve_log_readability()
+        _common_modules.improve_log_readability()
         validate_booking_fields(payload)
-        improve_log_readability()
+        _common_modules.improve_log_readability()
 
         booking_checkin = read_booking_dates(
             payload['check_in'],
             'check-in'
         )
-        improve_log_readability()
+        _common_modules.improve_log_readability()
         booking_checkout = read_booking_dates(
             payload['check_out'],
             'check-out'
         )
 
-        improve_log_readability()
+        _common_modules.improve_log_readability()
         booking_duration = compare_booking_dates(
             booking_checkin,
             booking_checkout
         )
 
-        improve_log_readability()
+        _common_modules.improve_log_readability()
         booking_stay_confirmation = check_room_availability(
             booking_checkin,
             booking_checkout,
@@ -611,20 +473,20 @@ def create_booking(payload, payload_type):
         )
         booking_state = booking_stay_confirmation[2]
 
-        improve_log_readability()
+        _common_modules.improve_log_readability()
         booking_checkin_time = generate_booking_times(
             booking_stay_confirmation[0],
             payload['check_in_time'],
             'check-in'
         )
-        improve_log_readability()
+        _common_modules.improve_log_readability()
         booking_checkout_time = generate_booking_times(
             booking_stay_confirmation[1],
             payload['check_out_time'],
             'check-out'
         )
 
-        improve_log_readability()
+        _common_modules.improve_log_readability()
         booking_price = generate_guests_price(
             booking_duration,
             payload['guests_number'],
@@ -632,7 +494,7 @@ def create_booking(payload, payload_type):
             payload['unit_id']
         )
 
-        improve_log_readability()
+        _common_modules.improve_log_readability()
         main_guest = f"{capitalize_first_letter(payload['title'])} {capitalize_first_letter(payload['firstname'])} {capitalize_first_letter(payload['surname'])}"
 
         booking_finalization = {
@@ -691,22 +553,37 @@ def create_booking(payload, payload_type):
                 total = booking_price
             )
         except Exception as e:
-            logger_error(e)
+            _common_modules.logger_error(e)
 
         if booking_state['stateChanged'] == False:
             redis_payload = booking_finalization.copy()
             redis_payload.pop('bookingState', None)
             redis_payload.pop('summary', None)
             # Sessions
-            create_redis_session(payload['email'], redis_payload)
+            _redis_modules.create_redis_session(payload['email'], redis_payload)
             # Unique Bookings
-            create_redis_session(str(booking_id), redis_payload)
+            _redis_modules.create_redis_session(str(booking_id), redis_payload)
             # Queue
-            add_to_rabbit_queue(str(booking_id))
-            add_to_rabbit_queue(redis_payload, 'json')
+            _rabbitmq_modules.add_to_rabbit_queue(str(booking_id))
+            _rabbitmq_modules.add_to_rabbit_queue(redis_payload, 'json')
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return booking_finalization
+
+
+'''
+Handle Client IP
+'''
+def handle_client_ip(payload):
+    client_ip = ''
+    try:
+        client_ip = payload.get('accessClient', '')
+        if not client_ip:
+            raise ValidationError('Client IP missing')
+    except Exception as e:
+        _common_modules.logger_error(e)
+        raise
+    return client_ip        
 
 
 '''
@@ -715,21 +592,23 @@ Create User Session
 def create_user_session(payload, payload_type):
     session_status = {
         'message': 'Creating session failed',
+        'status': 'failure',
         'code': 400
     }
     try:
-        payload = format_request_parameters(payload, payload_type)
-        client_ip = payload['accessClient']
-        create_redis_session(
+        payload = _common_modules.format_request_parameters(payload, payload_type)
+        client_ip = handle_client_ip(payload)
+        _redis_modules.create_redis_session(
             client_ip,
             payload
         )
         session_status = {
             'message': 'Session created',
+            'status': 'success',
             'code': 200
         }
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return session_status
 
 
@@ -737,14 +616,18 @@ def create_user_session(payload, payload_type):
 Fetch User Session
 '''
 def fetch_user_session(payload, payload_type):
-    user_session = {}
+    user_session = {
+        'code': 400,
+        'status': 'failure',
+        'message': 'User session not found'
+    }
     try:
-        payload = format_request_parameters(payload, payload_type)
-        client_ip = payload['accessClient']
-        user_session = fetch_redis_session(client_ip)
-        user_session = load_units_from_database(user_session)
+        payload = _common_modules.format_request_parameters(payload, payload_type)
+        client_ip = handle_client_ip(payload)
+        user_session = _redis_modules.fetch_redis_session(client_ip)
+        user_session = load_units_from_cache_or_database(user_session)
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return user_session
 
 
@@ -754,17 +637,19 @@ Delete User Session
 def delete_user_session(payload, payload_type):
     session_status = {
         'message': 'Clearing session failed',
+        'status': 'failure',
         'code': 400
     }
     try:
-        payload = format_request_parameters(payload, payload_type)
-        client_ip = payload['accessClient']
-        session_cleared = clear_redis_session(client_ip)
+        payload = _common_modules.format_request_parameters(payload, payload_type)
+        client_ip = handle_client_ip(payload)
+        session_cleared = _redis_modules.clear_redis_session(client_ip)
         if session_cleared:
             session_status = {
                 'message': 'Session cleared',
+                'status': 'success',
                 'code': 200
             }
     except Exception as e:
-        logger_error(e)
+        _common_modules.logger_error(e)
     return session_status

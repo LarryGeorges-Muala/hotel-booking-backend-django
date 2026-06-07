@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from backend.views import metrics_view
+from django.conf import settings
+from django.conf.urls.static import static
+from backend.views import metrics_view, health
 
 
 urlpatterns = [
@@ -24,4 +26,9 @@ urlpatterns = [
     path("booking/", include("backend.urls")),
     path('', include('django_prometheus.urls')),
     path('metrics/', metrics_view, name='metrics'),
+    path('health/', health, name='main_health'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

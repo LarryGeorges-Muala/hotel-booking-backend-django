@@ -60,6 +60,12 @@ __pycache__/
 *.pyo
 *.pyd
 *.sqlite3
+media/*
+**/media/*
+static/*
+**/static/*
+staticfiles/*
+**/staticfiles/*
 
 # Alertmanager
 .alertmanager/_data/*
@@ -92,6 +98,10 @@ data
 .jenkins-data/*
 **/.jenkins-data
 **/.jenkins-data/*
+
+# Redis
+.redis/_data/*
+**/.redis/_data/*
 
 # Local Vulnerabilities Report
 .vulnerabilities

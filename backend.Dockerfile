@@ -55,6 +55,10 @@ RUN rm -rf ./.alertmanager \
 RUN rm -rf ./logging/* || mkdir ./logging
 RUN touch ./logging/debug.log || true
 
+RUN mkdir ./media || true
+RUN mkdir ./static || true
+RUN mkdir ./staticfiles || true
+
 # Expose the Django port
 EXPOSE 8000 8888
 
