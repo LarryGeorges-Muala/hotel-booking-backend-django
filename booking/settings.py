@@ -17,7 +17,7 @@ from corsheaders.defaults import default_headers
 from dotenv import load_dotenv
 from cryptography.fernet import Fernet
 
-from backend.customlogger import PrometheusLogHandler
+from common._custom_logger import PrometheusLogHandler
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -237,7 +237,7 @@ LOGGING = {
         },
         'prometheus': {  # Send logs to Prometheus (custom handler)
             'level': 'INFO',
-            'class': 'backend.customlogger.PrometheusLogHandler',
+            'class': 'common._custom_logger.PrometheusLogHandler',
         },
     },
     'loggers': {
