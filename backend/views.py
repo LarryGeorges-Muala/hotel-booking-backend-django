@@ -11,24 +11,7 @@ from django.views.decorators.http import require_http_methods
 from prometheus_client import generate_latest
 
 from . import _booking_modules, _users_modules
-from common import _common_modules
-
-from opentelemetry import metrics
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import (
-    BatchSpanProcessor,
-    ConsoleSpanExporter,
-)
-
-
-trace.set_tracer_provider(TracerProvider())
-
-trace.get_tracer_provider().add_span_processor(
-    BatchSpanProcessor(ConsoleSpanExporter())
-)
-
-meter = metrics.get_meter(__name__)
+from common import _common_modules, _otel_modules
 
 
 def metrics_view(request):
@@ -39,11 +22,13 @@ def metrics_view(request):
 
 @require_http_methods(['GET'])
 def health(request):
-    request_counter = meter.create_counter(
-        name='django_health_requests_total',
-        description='Total HTTP requests',
+    _otel_modules.request_counter_health_endpoint.add(
+        1,
+        {
+            'http.method': request.method,
+            'http.route': request.path
+        }
     )
-    request_counter.add(1, {'http.method': request.method, 'http.route': request.path})
     return JsonResponse(
         _common_modules.health()
     )
