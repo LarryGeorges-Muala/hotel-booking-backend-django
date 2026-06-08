@@ -27,6 +27,8 @@ urlpatterns = [
     path('', include('django_prometheus.urls')),
     path('metrics/', metrics_view, name='metrics'),
     path('health/', health, name='main_health'),
+    path('accounts/', include('allauth.urls')),
+    path('accounts/mfa/', include('allauth.mfa.urls')), # Separate MFA routing
 ]
 
 if settings.DEBUG:

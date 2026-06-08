@@ -177,15 +177,16 @@ def fetch_user(request, payload, payload_type):
         try:
             user = User.objects.get(
                 username=client_email,
-                password=client_password,
             )
+            if not user.check_password(client_password):
+                raise("Invalid password.")
             client = models.Client.objects.get(
                 user=user,
                 email=client_email,
             )
             authenticate(
                 username=client_email,
-                password=client_password
+                password=client_password,
             )
             return {
                 'code': 200,
@@ -196,11 +197,13 @@ def fetch_user(request, payload, payload_type):
                     'userId': user.id,
                     'clientId': client.id,
                     'accessToken': get_token(request),
+                    'accessClient': payload.get('accessClient', ''),
                     'firstname': client.first_name,
                     'surname': client.last_name,
                     'email': client_email,
                     'title': client.title,
-                    'phone': client.phone
+                    'phone': client.phone,
+                    'valid': True,
                 }
             }
         except User.DoesNotExist:
@@ -213,7 +216,7 @@ def fetch_user(request, payload, payload_type):
             return {
                 'code': 404,
                 'status': 'failure',
-                'message': 'User not found'
+                'message': 'Client not found'
             }
         except Exception as e:
             _common_modules.logger_error(e)
@@ -225,4 +228,75 @@ def fetch_user(request, payload, payload_type):
         'code': 400,
         'status': 'failure',
         'message': 'Error fetching user'
+    }
+
+
+'''
+Update User
+'''
+def update_user(request, payload, payload_type):
+    try:
+        payload = _common_modules.format_request_parameters(
+            payload,
+            payload_type
+        )
+
+        client_email = payload.get('email', '')
+        if not client_email:
+            return {
+                'code': 404,
+                'status': 'failure',
+                'message': 'Email missing'
+            }
+
+        try:
+            user = User.objects.get(
+                username=client_email,
+            )
+            user.first_name=payload.get('firstname', '')
+            user.last_name=payload.get('surname', '')
+            user.save()
+            client = models.Client.objects.get(
+                user=user,
+                email=client_email,
+            )
+            client.title=payload.get('title', '')
+            client.first_name=payload.get('firstname', '')
+            client.last_name=payload.get('surname', '')
+            client.phone=payload.get('phone', '')
+            client.save()
+            authenticate(
+                username=user.username,
+                password=user.password,
+            )
+            return {
+                'code': 200,
+                'status': 'success',
+                'message': 'User updated',
+                'data': {
+                    'valid': True,
+                }
+            }
+        except User.DoesNotExist:
+            return {
+                'code': 404,
+                'status': 'failure',
+                'message': 'User not found'
+            }
+        except models.Client.DoesNotExist:
+            return {
+                'code': 404,
+                'status': 'failure',
+                'message': 'Client not found'
+            }
+        except Exception as e:
+            _common_modules.logger_error(e)
+            raise
+
+    except Exception as e:
+        _common_modules.logger_error(e)
+    return {
+        'code': 400,
+        'status': 'failure',
+        'message': 'Error updating user'
     }

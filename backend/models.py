@@ -381,6 +381,10 @@ class Booking(models.Model):
         decimal_places=2,
         default=0
     )
+    card_number = models.CharField(max_length=200, default='')
+    card_expiry = models.CharField(max_length=200, default='')
+    card_cvc = models.CharField(max_length=200, default='')
+    card_name = models.CharField(max_length=200, default='')
     created_date = models.DateTimeField("created", default=timezone.now)
     last_updated = models.DateTimeField("last updated", default=timezone.now)
 

@@ -1,6 +1,8 @@
-import json, re, pycountry
+import json, re, pycountry, ast
+from django.conf import settings
 from datetime import date, datetime, timedelta
 from django.core.exceptions import ValidationError
+from cryptography.fernet import Fernet
 from . import models
 from common import _common_modules, _rabbitmq_modules, _redis_modules
 
@@ -540,8 +542,25 @@ def create_booking(payload, payload_type):
         }
 
         try:
-            unit = models.Unit.objects.get(pk=payload['unit_id'])
+            cipher_suite = Fernet(
+                settings.CRYPTOGRAPHY_KEY
+            )
+            unit = models.Unit.objects.get(
+                pk=payload['unit_id']
+            )
             unit.booking_set.create(
+                card_number = cipher_suite.encrypt(
+                    str(payload.get('number', '')).encode('utf-8')
+                ),
+                card_expiry = cipher_suite.encrypt(
+                    str(payload.get('expiry', '')).encode('utf-8')
+                ),
+                card_cvc = cipher_suite.encrypt(
+                    str(payload.get('cvc', '')).encode('utf-8')
+                ),
+                card_name = cipher_suite.encrypt(
+                    str(payload.get('name', '')).encode('utf-8')
+                ),
                 check_in = booking_checkin_time,
                 check_in_time = booking_checkin_time,
                 check_out = booking_checkout_time,
@@ -653,3 +672,74 @@ def delete_user_session(payload, payload_type):
     except Exception as e:
         _common_modules.logger_error(e)
     return session_status
+
+
+'''
+Fetch Dashboard Data
+'''
+def fetch_dashboard_data(payload, payload_type):
+    try:
+        payload = _common_modules.format_request_parameters(
+            payload,
+            payload_type
+        )
+        client_ip = handle_client_ip(payload)
+        client_email = payload.get('email', '')
+        if not client_email:
+            return {
+                'code': 404,
+                'status': 'failure',
+                'message': 'Email missing'
+            }
+        dashboard = models.Booking.objects.filter(
+            guest_email=client_email
+        )
+        dashboard_data = []
+        cipher_suite = Fernet(
+            settings.CRYPTOGRAPHY_KEY
+        )
+        for entry in dashboard:
+            dashboard_data.append({
+                'check_in': entry.check_in,
+                'check_in_time': entry.check_in_time,
+                'check_out': entry.check_out,
+                'check_out_time': entry.check_out_time,
+                'guest_email': entry.guest_email,
+                'guest_origin': entry.guest_origin,
+                'guests_number': entry.guests_number,
+                'breakfast': entry.breakfast,
+                'total': entry.total,
+                'card_number': (
+                    cipher_suite.decrypt(
+                        ast.literal_eval(entry.card_number)
+                    )
+                ).decode("utf-8") if entry.card_number else '',
+                'card_expiry': (
+                    cipher_suite.decrypt(
+                        ast.literal_eval(entry.card_expiry)
+                    )
+                ).decode("utf-8") if entry.card_expiry else '',
+                'card_cvc': (
+                    cipher_suite.decrypt(
+                        ast.literal_eval(entry.card_cvc)
+                    )
+                ).decode("utf-8") if entry.card_cvc else '',
+                'card_name': (
+                    cipher_suite.decrypt(
+                        ast.literal_eval(entry.card_name)
+                    )
+                ).decode("utf-8") if entry.card_name else '',
+            })
+        return {
+            'code': 200,
+            'status': 'success',
+            'message': 'Data found',
+            'data': dashboard_data
+        }
+    except Exception as e:
+        _common_modules.logger_error(e)
+    return {
+        'code': 400,
+        'status': 'failure',
+        'message': 'Data not found'
+    }

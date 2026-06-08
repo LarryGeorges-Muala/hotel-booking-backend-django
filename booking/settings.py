@@ -15,6 +15,7 @@ import sentry_sdk
 from pathlib import Path
 from corsheaders.defaults import default_headers
 from dotenv import load_dotenv
+from cryptography.fernet import Fernet
 
 from backend.customlogger import PrometheusLogHandler
 
@@ -31,8 +32,17 @@ load_dotenv()
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
 
+CRYPTOGRAPHY_KEY = os.getenv('CRYPTOGRAPHY_KEY') # Fernet.generate_key()
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+SESSION_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = False if DEBUG else True
+# SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_SECONDS = 60
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -66,10 +76,23 @@ CORS_EXPOSE_HEADERS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
+# https://docs.djangoproject.com/en/6.0/topics/auth/default/
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
 # Application definition
 INSTALLED_APPS = [
     'django_prometheus',
     'backend.apps.BackendConfig',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',  # Optional, if using social logins
+    'allauth.mfa',            # Enables native MFA support
+    'easyaudit',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -89,6 +112,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'easyaudit.middleware.easyaudit.EasyAuditMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
@@ -181,6 +206,17 @@ sentry_sdk.init(
     # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
     send_default_pii=True,
 )
+
+# Auditing
+# https://github.com/soynatan/django-easy-audit/wiki/Settings
+DJANGO_EASY_AUDIT_WATCH_MODEL_EVENTS = True
+DJANGO_EASY_AUDIT_ADMIN_SHOW_MODEL_EVENTS = True
+
+DJANGO_EASY_AUDIT_WATCH_AUTH_EVENTS = True
+DJANGO_EASY_AUDIT_ADMIN_SHOW_AUTH_EVENTS = True
+
+DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = True
+DJANGO_EASY_AUDIT_ADMIN_SHOW_REQUEST_EVENTS = True
 
 # Add this at the bottom of the file
 LOGGING = {

@@ -127,3 +127,26 @@ def fetch_user(request):
             'json'
         )
     )
+
+
+@require_http_methods(['POST'])
+@csrf_protect
+def update_user(request):
+    return JsonResponse(
+        _users_modules.update_user(
+            request,
+            request.body,
+            'json'
+        )
+    )
+
+
+@require_http_methods(['POST'])
+@csrf_protect
+def fetch_dashboard_data(request):
+    return JsonResponse(
+        _booking_modules.fetch_dashboard_data(
+            request.body,
+            'json'
+        )
+    )
