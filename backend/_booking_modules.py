@@ -36,7 +36,7 @@ def load_and_cache_units_details(cached_units_key=_common_modules.CACHED_UNITS_K
             if unit.active:
                 units_list.append({
                     'id': unit.id,
-                    'thumbnail': 'http://localhost:8000/media/{}'.format(unit.thumbnail) if unit.thumbnail else 'http://localhost:8000/static/default.avif',
+                    'thumbnail': 'http://localhost:8000/media/{}'.format(unit.thumbnail) if unit.thumbnail else 'http://localhost:8000/media/demo/thumbnail/thumbnail.png',
                     'name': unit.name,
                     'type': unit.type,
                     'number_of_rooms': unit.number_of_rooms_in_unit(),

@@ -91,7 +91,7 @@ class Unit(models.Model):
         return self.bedroom_set.count()
 
     def number_of_bathrooms_in_unit(self):
-        return (self.bathroom_set.filter(bathroom_type="F").count() * 1) + (self.bathroom_set.filter(bathroom_type="H").count() * 0.5)
+        return (self.bathroom_set.filter(bathroom_type="Full").count() * 1) + (self.bathroom_set.filter(bathroom_type="Half").count() * 0.5)
     
     def activable(self):
         if (self.number_of_rooms_in_unit() >= 1) and (self.number_of_bathrooms_in_unit() >= 0.5):
@@ -196,7 +196,7 @@ class UnitPhoto(models.Model):
         choices=CATEGORY_CHOICES,
         default='Living',
     )
-    image = models.ImageField(upload_to=generate_upload_path)
+    image = models.ImageField(upload_to=generate_upload_path, blank=True, null=True)
     created_date = models.DateTimeField("created", default=timezone.now)
     last_updated = models.DateTimeField("last updated", default=timezone.now)
 
@@ -215,7 +215,7 @@ def manage_units_thumbnails(sender, instance, created, **kwargs):
     if instance.thumbnail:
         if instance.unit:
             # Update Unit
-            instance.unit.thumbnail = instance.image.url
+            instance.unit.thumbnail = str(instance.image.url).replace('media/', '')
             instance.unit.save()
             # Disable other thumbnails
             batch = UnitPhoto.objects.filter(
@@ -256,7 +256,7 @@ def manage_master_bedrooms(sender, instance, created, **kwargs):
     if instance.master_bedroom:
         if instance.unit:
             # Disable other masters
-            batch = UnitPhoto.objects.filter(
+            batch = Bedroom.objects.filter(
                 unit=instance.unit
                 ).exclude(
                     id=instance.id

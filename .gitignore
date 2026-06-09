@@ -60,8 +60,8 @@ __pycache__/
 *.pyo
 *.pyd
 *.sqlite3
-media/*
-**/media/*
+media/uploads/*
+**/media/uploads/*
 static/*
 **/static/*
 staticfiles/*
@@ -102,6 +102,10 @@ data
 # Redis
 .redis/_data/*
 **/.redis/_data/*
+
+# ClamAV
+.clamav/_data/*
+**/.clamav/_data/*
 
 # Local Vulnerabilities Report
 .vulnerabilities

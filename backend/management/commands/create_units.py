@@ -1,4 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.core.files import File
+from django.conf import settings
 from backend.models import Unit
 
 
@@ -9,34 +11,54 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            status = Unit.objects.get_or_create(
-                name = 'Sky View',
+            penthouse = Unit.objects.create(
+                pk = (Unit.objects.count() + 1),
+                name = 'View',
                 type = 'Penthouse',
-                number_of_rooms = 3,
-                number_of_bathrooms = 3,
                 price = 200,
                 occupancy = 6,
                 breakfast = True,
                 breakfast_price = 30,
                 active = True
             )
-            self.stdout.write(
-                self.style.SUCCESS('Operation successful: %s' % str(status))
+            penthouse.unitphoto_set.create(
+                unit = penthouse,
+                display = True,
+                thumbnail = True,
+                name = penthouse.name,
+                description = '{} Thumbnail'.format(penthouse.name),
+                category = 'Living',
+                image = 'demo/thumbnail/thumbnail.png'
             )
-
-            status = Unit.objects.get_or_create(
-                name = 'Sky Serenity',
-                type = 'Apartment',
-                number_of_rooms = 2,
-                number_of_bathrooms = 1,
-                price = 150,
-                occupancy = 4,
-                breakfast = True,
-                breakfast_price = 30,
-                active = True
+            bedroom = penthouse.bedroom_set.create(
+                unit = penthouse,
+                master_bedroom = True,
+                bed_type = 'King',
+                number_of_beds = 1
             )
+            penthouse.bedroomphoto_set.create(
+                unit = penthouse,
+                bedroom = bedroom,
+                display = True,
+                name = penthouse.name,
+                description = '{} Bedroom'.format(penthouse.name),
+                image = 'demo/room/bedroom.png'
+            )
+            bathroom = penthouse.bathroom_set.create(
+                unit = penthouse,
+                bathroom_type = 'Full'
+            )
+            penthouse.bathroomphoto_set.create(
+                unit = penthouse,
+                bathroom = bathroom,
+                display = True,
+                name = penthouse.name,
+                description = '{} Bathroom'.format(penthouse.name),
+                image = 'demo/bathroom/bathroom.png'
+            )
+            penthouse.save()
             self.stdout.write(
-                self.style.SUCCESS('Operation successful: %s' % str(status))
+                self.style.SUCCESS('Operation successful: %s' % str(penthouse))
             )
         except Exception as e:
             raise CommandError(e)

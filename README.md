@@ -8,9 +8,59 @@
 
 ---
 
+> SOC 2 TYPE 2 / OWASP 10 / ISO 27001 Security Compliance Diagram
+
+![Security Compliance](diagrams/Security-Compliance-Diagram.png)
+
+---
+
 > CI/CD/GitOps Strategy Diagram
 
 ![Diagram GitOps](diagrams/GitOps-Diagram.png)
+
+---
+
+## Back-End Security
+
+### Secured Browsing
+
+> Users Password Auth Encryption/Hashing: [django hashing](https://docs.djangoproject.com/en/6.0/topics/auth/passwords/)
+
+> Users MFA: [django-allauth package](https://docs.allauth.org/en/latest/) (mfa activation: /accounts/mfa/totp/activate/)
+
+> Apps CSRF Token Generation: [django csrf](https://docs.djangoproject.com/en/6.0/ref/csrf/)
+
+### Secured Sandbox
+
+> Sandboxed Environment: [docker](backend.Dockerfile)
+
+> Sandboxed Environment Orchestration: [compose.yaml](compose.yaml)
+
+### Data Traffic
+
+> Database Data Anonymization: [cryptography package](https://cryptography.io/en/latest/installation/)
+
+### Logging
+
+> Logs Sanitizing: [django logger](https://docs.djangoproject.com/en/6.0/topics/logging/)
+
+### Auditing & Tracing
+
+> Access Auditing: [django-easy-audit package](https://pypi.org/project/django-easy-audit/)
+
+> Tracing: [opentelemetry-python package](https://opentelemetry-python.readthedocs.io/en/latest/examples/django/README.html)
+
+### Uploaded Content
+
+> Uploaded Content Isolation: [docker volumes](backend.Dockerfile) / [compose.yaml](compose.yaml)
+
+> Uploaded Content Anti-Malware: [clamavnet](https://www.clamav.net/)
+
+### Basic Back-End Compliance Test
+
+> ```bash
+> python manage.py check --deploy
+> ```
 
 ---
 
@@ -106,28 +156,48 @@
 
 > Note: Python 3.12 recommended
 
+### Venv
+
+```bash
+python3.12 -m venv ./.venv
+source ./.venv/bin/activate
+python3 -m pip install -r requirements.txt
+```
+
+### Configuration
+
+- generate a data anonymization key `CRYPTOGRAPHY_KEY` in Django shell
+```bash
+python manage.py shell
+from cryptography.fernet import Fernet
+Fernet.generate_key()
+exit()
+```
+
 - create `.env` file
 ```bash
 SECRET_KEY='some-string'
+CRYPTOGRAPHY_KEY='generated-key-from-django-shell'
 SENTRY_DNS_DJANGO='https://...ingest.us.sentry.io/...'
 ALERT_MANAGER_SLACK_API_URL="https://hooks.slack.com/services/..."
 ALERT_MANAGER_SLACK_API_CHANNEL="#..."
 ```
 
-> Note: see https://sentry.io/pricing/ for a Sentry free-trial account to gain access to the monitor dashboard
+> Note: see https://sentry.io/pricing/ for a Sentry free-trial account to gain access to the monitoring dashboard
 
-- setup application
+### Migrations
+
+- run database migration
+
 ```bash
-python3.12 -m venv ./.venv
-source ./.venv/bin/activate
-python3 -m pip install -r requirements.txt
-python3 manage.py makemigrations
-python3 manage.py migrate
+python manage.py makemigrations
+python manage.py migrate
 ```
 
-- Populate database
+- populate the database with test data
+
 ```bash
-python3 manage.py create_units
+python manage.py create_units
 ```
 
 ---
