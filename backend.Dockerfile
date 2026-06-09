@@ -73,6 +73,7 @@ RUN opentelemetry-bootstrap -a install
 
 # Sanity check
 RUN python manage.py check
+RUN python manage.py check --deploy
 
 # Run Django’s development server
 # CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

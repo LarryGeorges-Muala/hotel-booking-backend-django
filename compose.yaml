@@ -11,9 +11,12 @@ services:
       - .:/app
       - .vulnerabilities:/.vulnerabilities
       - /app/.alertmanager/_data
+      - /app/.alloy/_data
       - /app/.grafana/_data
       - /app/.jenkins-data
+      - /app/.loki/_data
       - /app/.prometheus/_data
+      - /app/.tempo/_data
     restart: unless-stopped
 
   jenkins:
@@ -35,9 +38,13 @@ services:
       - .:/app
       - .jenkins-data:/var/jenkins_home
       - /app/.alertmanager/_data
+      - /app/.alloy/_data
       - /app/.grafana/_data
       - /app/.jenkins-data
+      - /app/.loki/_data
       - /app/.prometheus/_data
+      - /app/.tempo/_data
+      - /app/.vulnerabilities
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/local/bin/docker:/usr/bin/docker
     restart: unless-stopped
@@ -248,12 +255,20 @@ services:
   redis:
     image: redis:alpine
     container_name: redis
-    command: redis-server --bind 0.0.0.0
+    restart: always
+    command: redis-server --bind 0.0.0.0 --appendonly yes
+    volumes:
+      - .redis/_data:/data
     networks:
       - local_network
     ports:
       # - 127.0.0.1:6379:6379
       - 0.0.0.0:6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   kafka:
     image: apache/kafka:4.3.0
@@ -262,6 +277,23 @@ services:
       - local_network
     ports:
       - 9092:9092
+
+  clamav:
+    image: clamav/clamav:stable-debian
+    container_name: clamav_scanner
+    # command: clamscan --log=/report/clamav.log --move=/quarantine -r -v /app/media
+    networks:
+      - local_network
+    restart: unless-stopped
+    ports:
+      - "3310:3310"
+    volumes:
+      - .clamav/_data:/var/lib/clamav
+      - .clamav/quarantine:/quarantine
+      - .clamav/report:/report
+      - ./media:/app/media
+    environment:
+      - CLAMAV_NO_DB_ONLY=false
 
   backend-django:
     container_name: backend-django
@@ -272,13 +304,19 @@ services:
       dockerfile: ./backend.Dockerfile
     volumes:
       - .:/app
+      - ./media:/app/media
       - /app/.alertmanager/_data
+      - /app/.alloy/_data
       - /app/.grafana/_data
       - /app/.jenkins-data
+      - /app/.loki/_data
       - /app/.prometheus/_data
+      - /app/.tempo/_data
+      - /app/.vulnerabilities
     environment:
       ENV: ${ENVIRONMENT}
       SECRET_KEY: ${SECRET_KEY}
+      CRYPTOGRAPHY_KEY: ${CRYPTOGRAPHY_KEY}
       REDIS_HOST: ${REDIS_HOST}
       SENTRY_DNS_DJANGO: ${SENTRY_DNS_DJANGO}
     ports:
@@ -302,9 +340,13 @@ services:
     volumes:
       - ../../hotel-booking-frontend-reactjs/:/app
       - /app/.alertmanager/_data
+      - /app/.alloy/_data
       - /app/.grafana/_data
       - /app/.jenkins-data
+      - /app/.loki/_data
       - /app/.prometheus/_data
+      - /app/.tempo/_data
+      - /app/.vulnerabilities
       - /app/node_modules  # Prevents local node_modules from overwriting container's
     environment:
       - CHOKIDAR_USEPOLLING=true  # Required for some OS/Docker setups to detect changes
@@ -370,9 +412,12 @@ services:
       - .:/app
       - .vulnerabilities:/.vulnerabilities
       - /app/.alertmanager/_data
+      - /app/.alloy/_data
       - /app/.grafana/_data
       - /app/.jenkins-data
+      - /app/.loki/_data
       - /app/.prometheus/_data
+      - /app/.tempo/_data
     depends_on:
       backend-django:
         condition: service_started

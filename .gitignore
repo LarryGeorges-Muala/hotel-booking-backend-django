@@ -104,8 +104,8 @@ data
 **/.redis/_data/*
 
 # ClamAV
-.clamav/_data/*
-**/.clamav/_data/*
+.clamav/*
+**/.clamav/*
 
 # Local Vulnerabilities Report
 .vulnerabilities
