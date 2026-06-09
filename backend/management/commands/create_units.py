@@ -28,7 +28,7 @@ class Command(BaseCommand):
                 name = penthouse.name,
                 description = '{} Thumbnail'.format(penthouse.name),
                 category = 'Living',
-                image = 'demo/thumbnail/thumbnail.png'
+                image = 'demo/thumbnail/thumbnail.jpg'
             )
             bedroom = penthouse.bedroom_set.create(
                 unit = penthouse,
@@ -42,7 +42,7 @@ class Command(BaseCommand):
                 display = True,
                 name = penthouse.name,
                 description = '{} Bedroom'.format(penthouse.name),
-                image = 'demo/room/bedroom.png'
+                image = 'demo/room/bedroom.jpg'
             )
             bathroom = penthouse.bathroom_set.create(
                 unit = penthouse,
@@ -54,7 +54,7 @@ class Command(BaseCommand):
                 display = True,
                 name = penthouse.name,
                 description = '{} Bathroom'.format(penthouse.name),
-                image = 'demo/bathroom/bathroom.png'
+                image = 'demo/bathroom/bathroom.jpg'
             )
             penthouse.save()
             self.stdout.write(
