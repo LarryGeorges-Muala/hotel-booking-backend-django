@@ -37,10 +37,18 @@ decorator_relaxed_posts = [
 '''
     Endpoints
 '''
-def metrics_view(request):
-    """Expose Prometheus metrics, including log counters."""
+@method_decorator(
+    decorator_secured_gets, 
+    name="dispatch"
+)
+class PrometheusMetrics(View):
+    ''' Expose Prometheus metrics, including log counters. '''
     metrics = generate_latest()  # Generate all Prometheus metrics
-    return HttpResponse(metrics, content_type='text/plain')
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(
+            self.metrics,
+            content_type='text/plain'
+        )
 
 
 @method_decorator(
