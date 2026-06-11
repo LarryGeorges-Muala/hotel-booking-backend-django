@@ -5,7 +5,7 @@
     {% for key, value in unit_data.items %}
         <li><strong>{{ key }}:</strong> {{ value }}<br />
             {% if key == 'thumbnail' %}
-            <img src="/media/{{ value }}" style="max-height: 200px; max-width: 200px;"></li>
+            <img src="{{ value.url }}" style="max-height: 200px; max-width: 200px;"></li>
             {% endif %}
     {% endfor %}
     </ul>
@@ -19,7 +19,7 @@
         {% for key, value in data.items %}
             <li><strong>{{ key }}:</strong> {{ value }}<br />
             {% if key == 'image' %}
-            <img src="/media/{{ value }}" style="max-height: 200px; max-width: 200px;"></li>
+            <img src="{{ value.url }}" style="max-height: 200px; max-width: 200px;"></li>
             {% endif %}
         {% endfor %}
     {% endfor %}
@@ -42,7 +42,7 @@
         {% for key, value in data.items %}
             <li><strong>{{ key }}:</strong> {{ value }}<br />
             {% if key == 'image' %}
-            <img src="/media/{{ value }}" style="max-height: 200px; max-width: 200px;"></li>
+            <img src="{{ value.url }}" style="max-height: 200px; max-width: 200px;"></li>
             {% endif %}
         {% endfor %}
     {% endfor %}
@@ -65,7 +65,7 @@
         {% for key, value in data.items %}
             <li><strong>{{ key }}:</strong> {{ value }}<br />
             {% if key == 'image' %}
-            <img src="/media/{{ value }}" style="max-height: 200px; max-width: 200px;"></li>
+            <img src="{{ value.url }}" style="max-height: 200px; max-width: 200px;"></li>
             {% endif %}
         {% endfor %}
     {% endfor %}
