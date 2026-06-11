@@ -1,0 +1,9 @@
+
+{% block content %}
+    <h2>Units</h2>
+    <ul>
+        {% for unit in units_available %}
+            <li><a href="{% url 'backend:details' unit.id %}">{{ unit.name }} - {{ unit.id }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

@@ -88,17 +88,17 @@ AUTHENTICATION_BACKENDS = [
 INSTALLED_APPS = [
     'django_prometheus',
     'backend.apps.BackendConfig',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',  # Optional, if using social logins
-    'allauth.mfa',            # Enables native MFA support
-    'easyaudit',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',  # Optional, if using social logins
+    'allauth.mfa',            # Enables native MFA support
+    'easyaudit',
     'corsheaders',
 ]
 

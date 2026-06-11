@@ -7,6 +7,7 @@ app_name = "backend"
 
 urlpatterns = [
     # ex: /backend/
+    path("", views.Index.as_view(), name="index"),
     path("health/", views.Health.as_view(), name="health"),
     path("create/", views.CreateBooking.as_view(), name="create_booking"),
     path("session/", views.CreateUserSession.as_view(), name="create_user_session"),
@@ -17,4 +18,6 @@ urlpatterns = [
     path("users/verify/", views.VerifyUser.as_view(), name="verify_user"),
     path("users/login/", views.FetchUser.as_view(), name="fetch_user"),
     path("users/profile/", views.UpdateUser.as_view(), name="update_user"),
+    path("units/", views.UnitListView.as_view(), name="units"),
+    path("details/<int:pk>/", views.UnitDetailView.as_view(), name="details"),
 ]

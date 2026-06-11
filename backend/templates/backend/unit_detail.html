@@ -1,0 +1,84 @@
+
+{% block content %}
+    <h1>{{ single_unit.name }} ({{ single_unit.id }})</h1>
+    <ul>
+    {% for key, value in unit_data.items %}
+        <li><strong>{{ key }}:</strong> {{ value }}<br />
+            {% if key == 'thumbnail' %}
+            <img src="/media/{{ value }}" style="max-height: 200px; max-width: 200px;"></li>
+            {% endif %}
+    {% endfor %}
+    </ul>
+    <h4>Total Bookings: {{ bookings_count }}</h4>
+    <h4>Active Bookings: {{ bookings_active }}</h4>
+    <h4>Completed Bookings: {{ bookings_completed }}</h4>
+    <hr />
+    <h3>Unit Photos</h3>
+    <ul>
+    {% for data in unit_photo_data %}
+        {% for key, value in data.items %}
+            <li><strong>{{ key }}:</strong> {{ value }}<br />
+            {% if key == 'image' %}
+            <img src="/media/{{ value }}" style="max-height: 200px; max-width: 200px;"></li>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+    </ul>
+
+    <hr />
+
+    <h2>Bedrooms</h2>
+    <ul>
+    {% for data in bedroom_data %}
+        {% for key, value in data.items %}
+            <li><strong>{{ key }}:</strong> {{ value }}</li>
+        {% endfor %}
+    {% endfor %}
+    </ul>
+
+    <h3>Bedrooms Photos</h3>
+    <ul>
+    {% for data in bedroom_photo_data %}
+        {% for key, value in data.items %}
+            <li><strong>{{ key }}:</strong> {{ value }}<br />
+            {% if key == 'image' %}
+            <img src="/media/{{ value }}" style="max-height: 200px; max-width: 200px;"></li>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+    </ul>
+
+    <hr />
+
+    <h2>Bathrooms</h2>
+    <ul>
+    {% for data in bathroom_data %}
+        {% for key, value in data.items %}
+            <li><strong>{{ key }}:</strong> {{ value }}</li>
+        {% endfor %}
+    {% endfor %}
+    </ul>
+
+    <h3>Bathrooms Photos</h3>
+    <ul>
+    {% for data in bathroom_photo_data %}
+        {% for key, value in data.items %}
+            <li><strong>{{ key }}:</strong> {{ value }}<br />
+            {% if key == 'image' %}
+            <img src="/media/{{ value }}" style="max-height: 200px; max-width: 200px;"></li>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+    </ul>
+
+    <hr />
+
+    <h2>Bookings</h2>
+    <ul>
+    {% for data in bookings_data %}
+        {% for key, value in data.items %}
+            <li><strong>{{ key }}:</strong> {{ value }}</li>
+        {% endfor %}
+    {% endfor %}
+    </ul>
+{% endblock %}
