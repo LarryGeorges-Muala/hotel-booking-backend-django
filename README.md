@@ -200,6 +200,14 @@ python manage.py migrate
 python manage.py create_units
 ```
 
+### Tests
+
+- run tests
+
+```bash
+python manage.py test backend
+```
+
 ---
 
 ## Backend Execution
