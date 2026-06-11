@@ -19,7 +19,7 @@
         {% for key, value in data.items %}
             <li><strong>{{ key }}:</strong> {{ value }}<br />
             {% if key == 'image' %}
-            <img src="{{ value.url }}" style="max-height: 200px; max-width: 200px;"></li>
+            <img src="{{ value.url }}" alt="{{ value.name }}" style="max-height: 200px; max-width: 200px;"></li>
             {% endif %}
         {% endfor %}
     {% endfor %}
