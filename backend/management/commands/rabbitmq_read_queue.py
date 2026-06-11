@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
 from common import _rabbitmq_modules
 from backend import _booking_modules
 
@@ -53,6 +54,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         rabbit_queue = options["queue"]
         rabbit_host = options["host"]
+
+        ''' DEBUG Refresh '''
+        if settings.DEBUG:
+            _booking_modules.load_and_cache_units_details()
 
         _rabbitmq_modules.read_from_rabbit_queue(
             self.display_host,

@@ -7,15 +7,14 @@ app_name = "backend"
 
 urlpatterns = [
     # ex: /backend/
-    path("", views.index, name="index"),
-    path("health/", views.health, name="health"),
-    path("create/", views.create_booking, name="create_booking"),
-    path("session/", views.create_user_session, name="create_user_session"),
-    path("reload/", views.fetch_user_session, name="fetch_user_session"),
-    path("reset/", views.clear_user_session, name="clear_user_session"),
-    path("dashboard/", views.fetch_dashboard_data, name="fetch_dashboard_data"),
-    path("users/register/", views.create_user, name="create_user"),
-    path("users/verify/", views.verify_user, name="verify_user"),
-    path("users/login/", views.fetch_user, name="fetch_user"),
-    path("users/profile/", views.update_user, name="update_user"),
+    path("health/", views.Health.as_view(), name="health"),
+    path("create/", views.CreateBooking.as_view(), name="create_booking"),
+    path("session/", views.CreateUserSession.as_view(), name="create_user_session"),
+    path("reload/", views.FetchUserSession.as_view(), name="fetch_user_session"),
+    path("reset/", views.ClearUserSession.as_view(), name="clear_user_session"),
+    path("dashboard/", views.FetchDashboardData.as_view(), name="fetch_dashboard_data"),
+    path("users/register/", views.CreateUser.as_view(), name="create_user"),
+    path("users/verify/", views.VerifyUser.as_view(), name="verify_user"),
+    path("users/login/", views.FetchUser.as_view(), name="fetch_user"),
+    path("users/profile/", views.UpdateUser.as_view(), name="update_user"),
 ]

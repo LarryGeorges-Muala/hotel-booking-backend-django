@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
-from backend.views import metrics_view, health
+from backend.views import metrics_view, Health
 
 
 urlpatterns = [
@@ -26,7 +26,7 @@ urlpatterns = [
     path("booking/", include("backend.urls")),
     path('', include('django_prometheus.urls')),
     path('metrics/', metrics_view, name='metrics'),
-    path('health/', health, name='main_health'),
+    path('health/', Health.as_view(), name='main_health'),
     path('accounts/', include('allauth.urls')),
     path('accounts/mfa/', include('allauth.mfa.urls')), # Separate MFA routing
 ]
