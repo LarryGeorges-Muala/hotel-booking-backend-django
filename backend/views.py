@@ -44,6 +44,16 @@ def index(request):
         )
     )
 
+@require_http_methods(['POST'])
+@csrf_protect
+def create_booking(request):
+    return JsonResponse(
+        _booking_modules.create_booking(
+            request.body,
+            'json'
+        )
+    )
+
 
 @require_http_methods(['POST'])
 @csrf_protect
