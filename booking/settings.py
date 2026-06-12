@@ -35,7 +35,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 CRYPTOGRAPHY_KEY = os.getenv('CRYPTOGRAPHY_KEY') # Fernet.generate_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', True)
 
 SESSION_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = False if DEBUG else True
@@ -183,10 +183,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / 'static',
 ]
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATIC_URL = 'static/'
 
@@ -209,6 +209,7 @@ sentry_sdk.init(
 
 # Auditing
 # https://github.com/soynatan/django-easy-audit/wiki/Settings
+
 DJANGO_EASY_AUDIT_WATCH_MODEL_EVENTS = True
 DJANGO_EASY_AUDIT_ADMIN_SHOW_MODEL_EVENTS = True
 
@@ -218,32 +219,59 @@ DJANGO_EASY_AUDIT_ADMIN_SHOW_AUTH_EVENTS = True
 DJANGO_EASY_AUDIT_WATCH_REQUEST_EVENTS = True
 DJANGO_EASY_AUDIT_ADMIN_SHOW_REQUEST_EVENTS = True
 
-# Add this at the bottom of the file
+# Logging
+# https://docs.djangoproject.com/en/6.0/topics/logging/
+
 LOGGING = {
     'version': 1,  # Specifies the logging configuration schema version
     'disable_existing_loggers': False,  # Keep default Django loggers active
     'formatters': {
+        'detailed': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message} {stack_info}',
+            'style': '{',  # Use `{}` to format log messages
+        },
         'verbose': {
             'format': '{levelname} {asctime} {module} {message}',
             'style': '{',  # Use `{}` to format log messages
         },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',  # Use `{}` to format log messages
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
     },
     'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
         'file': {  # Write logs to a file
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            # 'class': 'logging.FileHandler',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'backupCount': 7,
+            'interval': 1,
+            'when': 'midnight',
             'filename': os.path.join(BASE_DIR, 'logging/debug.log'),  # Log file path
-            'formatter': 'verbose',  # Use the verbose format
+            'formatter': 'detailed',
         },
         'prometheus': {  # Send logs to Prometheus (custom handler)
             'level': 'INFO',
             'class': 'common._custom_logger.PrometheusLogHandler',
         },
     },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
     'loggers': {
         'django': {
-            'handlers': ['file', 'prometheus'],  # Use both file and Prometheus handlers
-            'level': 'INFO',  # Log everything INFO and above
+            'handlers': ['file', 'prometheus', 'console'],  # Use both file and Prometheus handlers
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),  # Log everything INFO and above
             'propagate': True,  # Pass log messages to parent loggers
         },
     },
