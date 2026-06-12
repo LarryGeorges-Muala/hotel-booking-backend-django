@@ -157,7 +157,7 @@ class Unit(models.Model):
         self.last_updated = timezone.now()
         # Cannot be active without at least 1 bedroom and 1 bathroom
         self.active = self.activable()
-        # Send to Rabbit and let Rabbit send to Redis
+        # Send to Rabbit and let Rabbit send to Redis and Redis will cache all units for the frontend
         _rabbitmq_modules.add_to_rabbit_queue(
             _rabbitmq_modules.RABBIT_MQ_INSTRUCTION_CACHE_UNITS
         )

@@ -208,6 +208,16 @@ python manage.py create_units
 python manage.py test backend
 ```
 
+### Setup Groups and User
+
+- create groups (admin, editor, viewer) then a staff or superuser account
+
+```bash
+python manage.py create_groups --username="user@example.com" --password="..." --permission_level=""
+```
+
+> Note: Permissions levels: superuser | admin | editor | viewer
+
 ---
 
 ## Backend Execution
