@@ -381,10 +381,6 @@ class Booking(models.Model):
         decimal_places=2,
         default=0
     )
-    card_number = models.CharField(max_length=200, default='')
-    card_expiry = models.CharField(max_length=200, default='')
-    card_cvc = models.CharField(max_length=200, default='')
-    card_name = models.CharField(max_length=200, default='')
     created_date = models.DateTimeField("created", default=timezone.now)
     last_updated = models.DateTimeField("last updated", default=timezone.now)
 
@@ -409,4 +405,25 @@ class Booking(models.Model):
         # Save
         super().save(*args, **kwargs)
 
-    # On Save, cache to Redis and event on Kafka
+        # On Save, queue in Rabbit and event on Kafka
+
+
+class Card(models.Model):
+
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE)
+    card_number = models.CharField(max_length=200, default='')
+    card_expiry = models.CharField(max_length=200, default='')
+    card_cvc = models.CharField(max_length=200, default='')
+    card_name = models.CharField(max_length=200, default='')
+    created_date = models.DateTimeField("created", default=timezone.now)
+    last_updated = models.DateTimeField("last updated", default=timezone.now)
+
+    def __str__(self):
+        return f"{self.booking.check_in} -> {self.booking.check_out} | {self.unit.name} | {self.booking.duration_calculator()} night(s) | Made on {self.booking.created_date}"
+
+    def save(self, *args, **kwargs):
+        # Refresh update timestamp
+        self.last_updated = timezone.now()
+        # Save
+        super().save(*args, **kwargs)

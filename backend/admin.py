@@ -7,6 +7,7 @@ admin.site.register(models.Bedroom)
 admin.site.register(models.Bathroom)
 admin.site.register(models.Client)
 admin.site.register(models.Booking)
+admin.site.register(models.Card)
 
 @admin.register(models.Unit)
 class UnitAdmin(admin.ModelAdmin):

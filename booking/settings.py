@@ -33,6 +33,8 @@ load_dotenv()
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 CRYPTOGRAPHY_KEY = os.getenv('CRYPTOGRAPHY_KEY') # Fernet.generate_key()
+CRYPTOGRAPHY_SECONDARY_KEY = os.getenv('CRYPTOGRAPHY_SECONDARY_KEY', '') # Fernet.generate_key()
+CRYPTOGRAPHY_TERTIARY_KEY = os.getenv('CRYPTOGRAPHY_TERTIARY_KEY', '') # Fernet.generate_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', True)
@@ -145,8 +147,22 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    },
+    'secondary': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.secondary.sqlite3',
+    },
+    'tertiary': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.tertiary.sqlite3',
+    },
 }
+
+# https://docs.djangoproject.com/en/6.0/topics/db/multi-db/
+
+# DATABASE_ROUTERS = [
+#     'backend.routers.ReadReplicaRouter',
+# ]
 
 
 # Password validation
@@ -246,6 +262,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
@@ -265,8 +282,8 @@ LOGGING = {
         },
     },
     'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
+        'handlers': ['file', 'prometheus', 'console'],
+        'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
     },
     'loggers': {
         'django': {

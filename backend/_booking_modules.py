@@ -542,25 +542,10 @@ def create_booking(payload, payload_type):
         }
 
         try:
-            cipher_suite = Fernet(
-                settings.CRYPTOGRAPHY_KEY
-            )
             unit = models.Unit.objects.get(
                 pk=payload['unit_id']
             )
-            unit.booking_set.create(
-                card_number = cipher_suite.encrypt(
-                    str(payload.get('number', '')).encode('utf-8')
-                ),
-                card_expiry = cipher_suite.encrypt(
-                    str(payload.get('expiry', '')).encode('utf-8')
-                ),
-                card_cvc = cipher_suite.encrypt(
-                    str(payload.get('cvc', '')).encode('utf-8')
-                ),
-                card_name = cipher_suite.encrypt(
-                    str(payload.get('name', '')).encode('utf-8')
-                ),
+            booking = unit.booking_set.create(
                 check_in = booking_checkin_time,
                 check_in_time = booking_checkin_time,
                 check_out = booking_checkout_time,
@@ -571,6 +556,28 @@ def create_booking(payload, payload_type):
                 breakfast = (payload['breakfast'] in ['true', 'on']),
                 total = booking_price
             )
+            try:
+                cipher_suite_default = Fernet(
+                    settings.CRYPTOGRAPHY_KEY
+                )
+                models.Card(
+                    unit = unit,
+                    booking = booking,
+                    card_number = cipher_suite_default.encrypt(
+                        str(payload.get('number', '')).encode('utf-8')
+                    ),
+                    card_expiry = cipher_suite_default.encrypt(
+                        str(payload.get('expiry', '')).encode('utf-8')
+                    ),
+                    card_cvc = cipher_suite_default.encrypt(
+                        str(payload.get('cvc', '')).encode('utf-8')
+                    ),
+                    card_name = cipher_suite_default.encrypt(
+                        str(payload.get('name', '')).encode('utf-8')
+                    ),
+                ).save()
+            except Exception as e:
+                _common_modules.logger_error(e)
         except Exception as e:
             _common_modules.logger_error(e)
 
@@ -699,6 +706,7 @@ def fetch_dashboard_data(payload, payload_type):
             settings.CRYPTOGRAPHY_KEY
         )
         for entry in dashboard:
+            card = models.Card.objects.filter(booking=entry).first()
             dashboard_data.append({
                 'check_in': entry.check_in,
                 'check_in_time': entry.check_in_time,
@@ -711,24 +719,24 @@ def fetch_dashboard_data(payload, payload_type):
                 'total': entry.total,
                 'card_number': (
                     cipher_suite.decrypt(
-                        ast.literal_eval(entry.card_number)
+                        ast.literal_eval(card.card_number)
                     )
-                ).decode("utf-8") if entry.card_number else '',
+                ).decode("utf-8") if card.card_number else '',
                 'card_expiry': (
                     cipher_suite.decrypt(
-                        ast.literal_eval(entry.card_expiry)
+                        ast.literal_eval(card.card_expiry)
                     )
-                ).decode("utf-8") if entry.card_expiry else '',
+                ).decode("utf-8") if card.card_expiry else '',
                 'card_cvc': (
                     cipher_suite.decrypt(
-                        ast.literal_eval(entry.card_cvc)
+                        ast.literal_eval(card.card_cvc)
                     )
-                ).decode("utf-8") if entry.card_cvc else '',
+                ).decode("utf-8") if card.card_cvc else '',
                 'card_name': (
                     cipher_suite.decrypt(
-                        ast.literal_eval(entry.card_name)
+                        ast.literal_eval(card.card_name)
                     )
-                ).decode("utf-8") if entry.card_name else '',
+                ).decode("utf-8") if card.card_name else '',
             })
         return {
             'code': 200,

@@ -213,7 +213,8 @@ python manage.py test backend
 - create groups (admin, editor, viewer) then a staff or superuser account
 
 ```bash
-python manage.py create_groups --username="user@example.com" --password="..." --permission_level=""
+python manage.py create_groups --username="admin@admin.com" --password="..." --permission_level="superuser"
+python manage.py create_groups --username="test@admin.com" --password="..." --permission_level="admin"
 ```
 
 > Note: Permissions levels: superuser | admin | editor | viewer
