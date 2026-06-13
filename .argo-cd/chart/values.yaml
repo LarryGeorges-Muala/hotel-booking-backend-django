@@ -42,7 +42,7 @@ super-chart:
             enabled: true
             command: ["/bin/sh"]
             args:
-              - while true; do date +'%Y-%m-%d %H:%M:%S'; sleep 10;done
+              - sleep 10000;
           targetGroupBinding:
             enabled: false
             arn: ""
