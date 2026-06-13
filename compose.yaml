@@ -104,7 +104,8 @@ services:
       - .loki/_data:/tmp/loki
     command: -config.file=/etc/loki/local-config.yaml
 
-  # # Generate fake traces...
+  # Generate fake traces...
+  # And put them in a Grafana Alloy pipeline...
   # k6-tracing:
   #   image: ghcr.io/grafana/xk6-client-tracing:v0.0.9
   #   environment:
@@ -118,7 +119,6 @@ services:
   #     - tempo
   #     - alloy
 
-  # And put them in a Grafana Alloy pipeline...
   alloy:
     image: grafana/alloy:v1.12.1@sha256:c311595156fca7b1131683d383dae1acfd29e8879d347161d2a6f714ebac0c0b
     container_name: alloy-django
@@ -305,6 +305,7 @@ services:
     volumes:
       - .:/app
       - ./media:/app/media
+      - ./logging:/app/logging
       - /app/.alertmanager/_data
       - /app/.alloy/_data
       - /app/.grafana/_data
@@ -317,7 +318,10 @@ services:
       ENV: ${ENVIRONMENT}
       SECRET_KEY: ${SECRET_KEY}
       CRYPTOGRAPHY_KEY: ${CRYPTOGRAPHY_KEY}
-      REDIS_HOST: ${REDIS_HOST}
+      DJANGO_LOG_LEVEL: ${DJANGO_LOG_LEVEL}
+      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      REDIS_HOST: host.docker.internal
+      RABBIT_MQ_HOST: host.docker.internal
       SENTRY_DNS_DJANGO: ${SENTRY_DNS_DJANGO}
     ports:
       - 8000:8000
@@ -327,6 +331,40 @@ services:
       redis:
         condition: service_started
       prometheus:
+        condition: service_started
+
+  backend-django-queue:
+    container_name: backend-django-queue
+    networks:
+      - local_network
+    build:
+      context: .
+      dockerfile: ./backend.Dockerfile
+    entrypoint: python3 manage.py rabbitmq_read_queue --host host.docker.internal --queue booking
+    restart: unless-stopped
+    volumes:
+      - .:/app
+      - /app/.alertmanager/_data
+      - /app/.alloy/_data
+      - /app/.grafana/_data
+      - /app/.jenkins-data
+      - /app/.loki/_data
+      - /app/.prometheus/_data
+      - /app/.tempo/_data
+      - /app/.vulnerabilities
+    environment:
+      ENV: ${ENVIRONMENT}
+      SECRET_KEY: ${SECRET_KEY}
+      CRYPTOGRAPHY_KEY: ${CRYPTOGRAPHY_KEY}
+      DJANGO_LOG_LEVEL: ${DJANGO_LOG_LEVEL}
+      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      REDIS_HOST: host.docker.internal
+      RABBIT_MQ_HOST: host.docker.internal
+      SENTRY_DNS_DJANGO: ${SENTRY_DNS_DJANGO}
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      backend-django:
         condition: service_started
 
   frontend:

@@ -9,11 +9,12 @@ spec:
   source:
     path: '.argo-cd/chart'
     repoURL: 'https://github.com/LarryGeorges-Muala/hotel-booking-backend-django'
-    targetRevision: develop
+    targetRevision: HEAD
+    # targetRevision: develop
     helm:
       parameters:
       - name: "super-chart.deployments[0].containers[0].image.tag"
-        value: "3.12-slim"
+        value: "$ARGOCD_APP_REVISION"
       - name: "super-chart.namespace"
         value: "dev"
       valueFiles:
