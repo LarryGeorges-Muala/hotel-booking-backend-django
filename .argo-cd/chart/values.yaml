@@ -40,17 +40,17 @@ super-chart:
                 name: env-secret-django
           startup:
             enabled: true
-            command:
-              - /bin/bash
-            args: []
+            command: ["/bin/sh"]
+            args:
+              - while true; do date +'%Y-%m-%d %H:%M:%S'; sleep 10;done;
           targetGroupBinding:
             enabled: false
             arn: ""
             securityGroup: ""
           image:
-            repository: python
+            repository: ubuntu
             pullPolicy: IfNotPresent
-            tag: "3.12-slim"
+            tag: "24.04"
           podAnnotations: {}
           podLabels: {}
           podSecurityContext: {}
