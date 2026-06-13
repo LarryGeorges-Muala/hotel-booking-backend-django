@@ -41,7 +41,7 @@ super-chart:
           startup:
             enabled: true
             command:
-              - sleep 10000;
+              - /bin/bash
             args: []
           targetGroupBinding:
             enabled: false
@@ -97,18 +97,18 @@ super-chart:
             requests:
               cpu: 500m
               memory: 512Mi
-          livenessProbe:
-            exec:
-              command:
-                - whoami
-            initialDelaySeconds: 15
-            periodSeconds: 20
-          readinessProbe:
-            exec:
-              command:
-                - whoami
-            initialDelaySeconds: 15
-            periodSeconds: 20
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - whoami
+          #   initialDelaySeconds: 15
+          #   periodSeconds: 20
+          # readinessProbe:
+          #   exec:
+          #     command:
+          #       - whoami
+          #   initialDelaySeconds: 15
+          #   periodSeconds: 20
           volumeMounts:
             - mountPath: /var/django
               name: data-volume
