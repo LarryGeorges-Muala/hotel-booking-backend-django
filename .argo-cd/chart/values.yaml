@@ -42,15 +42,15 @@ super-chart:
             enabled: true
             command: ["/bin/sh"]
             args:
-              - while true; do date +'%Y-%m-%d %H:%M:%S'; sleep 10;done;
+              - opentelemetry-instrument gunicorn --bind 0.0.0.0:8000 --workers 3 booking.wsgi:application
           targetGroupBinding:
             enabled: false
             arn: ""
             securityGroup: ""
           image:
-            repository: ubuntu
+            repository: python
             pullPolicy: IfNotPresent
-            tag: "24.04"
+            tag: "3.12-slim"
           podAnnotations: {}
           podLabels: {}
           podSecurityContext: {}
