@@ -37,7 +37,7 @@ CRYPTOGRAPHY_SECONDARY_KEY = os.getenv('CRYPTOGRAPHY_SECONDARY_KEY', '') # Ferne
 CRYPTOGRAPHY_TERTIARY_KEY = os.getenv('CRYPTOGRAPHY_TERTIARY_KEY', '') # Fernet.generate_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', True)
+DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
 SESSION_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = False if DEBUG else True

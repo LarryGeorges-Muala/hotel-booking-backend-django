@@ -1,4 +1,4 @@
-import redis
+import redis, os
 from . import _common_modules
 
 
@@ -7,7 +7,7 @@ Redis - Init
 '''
 def init_redis():
     return redis.Redis(
-        host='localhost',
+        host=os.getenv('REDIS_HOST', 'localhost'),
         port=6379,
         decode_responses=True
     )

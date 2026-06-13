@@ -1,23 +1,6 @@
 # https://www.docker.com/blog/how-to-dockerize-django-app/
 # Use the official Python runtime image
-FROM python:3.12
-
-
-# # Telemetry
-# WORKDIR /telemetry
-
-# RUN wget https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.152.0/otelcol_0.152.0_linux_arm64.deb
-
-# RUN dpkg -i otelcol_0.152.0_linux_arm64.deb
-
-# RUN rm -rf otelcol_0.152.0_linux_arm64.deb
-
-# COPY ./.opentelemetry/config/otelcol-metrics-config.yaml .opentelemetry/config/otelcol-metrics-config.yaml
-
-# COPY ./.opentelemetry/config/otelcol-default-config.yaml .opentelemetry/config/otelcol-default-config.yaml
-
-# RUN nohup bash -c "otelcol --config .opentelemetry/config/otelcol-metrics-config.yaml | otelcol --config .opentelemetry/config/otelcol-default-config.yaml" &
-
+FROM python:3.12-slim
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -36,19 +19,34 @@ COPY requirements.txt  /app/
  
 # run this command to install all dependencies 
 RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install --no-cache-dir \
+  opentelemetry-api \
+  opentelemetry-sdk \
+  opentelemetry-instrumentation-django \
+  opentelemetry-exporter-otlp \
+  opentelemetry-distro
+
+RUN opentelemetry-bootstrap -a install
  
+RUN useradd -m -r appuser && \
+    chown -R appuser /app
+
 # Copy the Django project to the container
-COPY . /app/
+# COPY . /app/
+COPY --chown=appuser:appuser . /app/
 
 RUN rm -rf ./.alertmanager \
     && rm -rf ./.alloy \
     && rm -rf ./.ansible \
+    && rm -rf ./.clamav \
     && rm -rf ./.dast \
     && rm -rf ./.grafana \
     && rm -rf ./.jenkins-data \
     && rm -rf ./.loki \
     && rm -rf ./.opentelemetry \
     && rm -rf ./.prometheus \
+    && rm -rf ./.redis \
     && rm -rf ./.tempo \
     && rm -rf ./.vulnerabilities
 
@@ -59,30 +57,26 @@ RUN mkdir ./media || true
 RUN mkdir ./static || true
 RUN mkdir ./staticfiles || true
 
-# Expose the Django port
-EXPOSE 8000 8888
-
-RUN pip install --no-cache-dir \
-  opentelemetry-api \
-  opentelemetry-sdk \
-  opentelemetry-instrumentation-django \
-  opentelemetry-exporter-otlp \
-  opentelemetry-distro
-
-RUN opentelemetry-bootstrap -a install
-
-# Sanity check
-RUN python manage.py check
-RUN python manage.py check --deploy
-
-# Run Django’s development server
-# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-
 ENV OTEL_SERVICE_NAME=booking-django
-# ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://host.docker.internal:4317
 ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://host.docker.internal:4320
 ENV OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 ENV PYTHONPATH=/app
 ENV DJANGO_SETTINGS_MODULE=booking.settings
 
-CMD ["opentelemetry-instrument", "python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]
+# Sanity check
+RUN python manage.py check
+RUN python manage.py check --deploy
+
+# Switch to non-root user
+USER appuser
+
+# Expose the Django port
+EXPOSE 8000 8888
+
+# Run Django’s development server
+# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "booking.wsgi:application"]
+
+# Run Django’s development server with auto-telemetry
+# CMD ["opentelemetry-instrument", "python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]
+CMD ["opentelemetry-instrument", "gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "booking.wsgi:application"]

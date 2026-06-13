@@ -5,7 +5,7 @@ from . import _common_modules
 '''
 Rabbit - Details
 '''
-RABBIT_MQ_HOST = "localhost"
+RABBIT_MQ_HOST = os.getenv('RABBIT_MQ_HOST', 'localhost')
 RABBIT_MQ_QUEUE = "booking"
 RABBIT_MQ_INSTRUCTION_CACHE_UNITS = "cache_units"
 
