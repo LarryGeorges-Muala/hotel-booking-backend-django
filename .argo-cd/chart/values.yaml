@@ -40,9 +40,9 @@ super-chart:
                 name: env-secret-django
           startup:
             enabled: true
-            command: ["/bin/sh"]
-            args:
+            command:
               - sleep 10000;
+            args: []
           targetGroupBinding:
             enabled: false
             arn: ""
@@ -115,7 +115,7 @@ super-chart:
 
         - name: "redis"
           startup:
-            enabled: true
+            enabled: false
             command: ["redis-server --bind 0.0.0.0 --appendonly yes"]
             args: []
           targetGroupBinding:
