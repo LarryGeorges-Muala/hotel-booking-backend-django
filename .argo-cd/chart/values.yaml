@@ -31,7 +31,7 @@ super-chart:
 
   deployments:
     - name: "backend"
-      kind: DaemonSet
+      kind: Deployment
       replicaCount: 1
       containers:
         - name: "api"
