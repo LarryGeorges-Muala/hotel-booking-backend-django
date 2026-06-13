@@ -13,7 +13,7 @@ spec:
     helm:
       parameters:
       - name: "super-chart.deployments[0].containers[0].image.tag"
-        value: "$ARGOCD_APP_REVISION"
+        value: "3.12-slim"
       - name: "super-chart.namespace"
         value: "dev"
       valueFiles:
