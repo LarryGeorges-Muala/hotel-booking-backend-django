@@ -19,7 +19,7 @@ super-chart:
         SECRET_KEY: ${SECRET_KEY}
         CRYPTOGRAPHY_KEY: ${CRYPTOGRAPHY_KEY}
         DJANGO_LOG_LEVEL: INFO
-        DJANGO_DEBUG: True
+        DJANGO_DEBUG: "True"
         REDIS_HOST: booking-backend-redis.dev.svc.cluster.local
         RABBIT_MQ_HOST: booking-backend-rabbitmq.dev.svc.cluster.local
         SENTRY_DNS_DJANGO: ${SENTRY_DNS_DJANGO}
@@ -61,7 +61,7 @@ super-chart:
             type: ClusterIP
             port: 8000
             extraPorts:
-              - name: http
+              - name: default
                 enabled: true
                 port: 80
                 protocol: TCP
@@ -137,7 +137,7 @@ super-chart:
             type: ClusterIP
             port: 6379
             extraPorts:
-              - name: http
+              - name: default
                 enabled: false
                 port: 80
                 protocol: TCP
