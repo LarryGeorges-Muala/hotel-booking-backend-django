@@ -116,9 +116,8 @@ super-chart:
         - name: "redis"
           startup:
             enabled: true
-            command: ["/bin/sh"]
-            args:
-              - redis-server --bind 0.0.0.0 --appendonly yes
+            command: ["redis-server --bind 0.0.0.0 --appendonly yes"]
+            args: []
           targetGroupBinding:
             enabled: false
             arn: ""
